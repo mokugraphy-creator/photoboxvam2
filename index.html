@@ -33,7 +33,7 @@
         body {
             background-color: var(--bg-body);
             color: var(--text-main);
-            padding: 30px 20px;
+            padding: 15px 10px;
         }
 
         .container {
@@ -42,7 +42,7 @@
         }
 
         header {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
@@ -51,8 +51,8 @@
             margin-bottom: 12px;
         }
         .brand-logo {
-            max-width: 90px;
-            height: auto;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--border);
@@ -60,7 +60,7 @@
         }
 
         header h1 {
-            font-size: 28px;
+            font-size: 22px;
             color: var(--primary);
             font-weight: 700;
             margin-bottom: 5px;
@@ -68,13 +68,43 @@
 
         header p {
             color: var(--text-muted);
-            font-size: 14px;
+            font-size: 13px;
+            padding: 0 10px;
         }
 
-        .main-layout {
+        /* Stats Bar Responsif */
+        .stats-bar {
             display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 25px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 12px 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .stat-card p {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        /* Main Layout Grid ke Stack Vertikal di HP */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .card {
@@ -82,14 +112,14 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            padding: 25px;
+            padding: 15px;
             height: fit-content;
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid var(--border);
             color: var(--primary);
@@ -127,7 +157,7 @@
         .radio-group, .grid-select {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
 
         .paket-group {
@@ -145,14 +175,15 @@
         .btn-outline {
             display: block;
             text-align: center;
-            padding: 8px;
+            padding: 8px 4px;
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             transition: all 0.2s;
+            word-break: break-word;
         }
 
         .btn-check:checked + .btn-outline {
@@ -168,10 +199,10 @@
             color: white;
             border: none;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 5px;
             transition: background 0.2s;
         }
 
@@ -179,27 +210,31 @@
             background: var(--primary-hover);
         }
 
+        /* Action Bar Responsif */
         .table-action-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            align-items: stretch;
             margin-bottom: 15px;
             gap: 10px;
         }
 
         .action-left-buttons {
             display: flex;
+            flex-direction: column;
             gap: 8px;
         }
 
         .btn-action {
-            padding: 8px 14px;
+            width: 100%;
+            padding: 10px 14px;
             font-size: 13px;
             font-weight: 600;
             border-radius: 6px;
             cursor: pointer;
             border: 1px solid var(--border);
             transition: all 0.2s;
+            text-align: center;
         }
 
         .btn-excel {
@@ -221,11 +256,16 @@
             color: white;
             border: none;
             display: none;
+            width: 100%;
         }
         .btn-bulk-delete:hover { background-color: #b91c1c; }
 
+        /* Pembungkus Tabel agar bisa digeser horizontal di HP */
         .table-container {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--border);
+            border-radius: 8px;
         }
 
         table {
@@ -233,6 +273,7 @@
             border-collapse: collapse;
             text-align: left;
             font-size: 13px;
+            white-space: nowrap;
         }
 
         th {
@@ -267,23 +308,26 @@
         .badge-info { background: #e0f2fe; color: #0369a1; }
 
         .action-select {
-            padding: 5px;
+            padding: 6px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             border: 1px solid var(--border);
             background: #fff;
             cursor: pointer;
+            width: 100%;
+            min-width: 110px;
         }
 
         .btn-row-action {
-            padding: 4px 6px;
-            font-size: 11px;
+            padding: 6px 10px;
+            font-size: 12px;
             font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
             border: 1px solid var(--border);
             background: white;
-            margin-right: 2px;
+            margin-right: 4px;
+            display: inline-block;
         }
 
         .btn-pdf {
@@ -305,39 +349,60 @@
         }
         .btn-delete:hover { background: #fee2e2; }
 
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: white;
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .stat-card p {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
         #qrcode-hidden {
             position: absolute;
             left: -9999px;
             top: -9999px;
             background: white;
             padding: 10px;
+        }
+
+        /* MEDIA QUERIES UNTUK TAMPILAN TABLET & DESKTOP (LAYAR LEBAR) */
+        @media (min-width: 768px) {
+            body {
+                padding: 30px 20px;
+            }
+            header h1 {
+                font-size: 28px;
+            }
+            header p {
+                font-size: 14px;
+            }
+            .stats-bar {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+            .stat-card p {
+                font-size: 20px;
+            }
+            .main-layout {
+                display: grid;
+                grid-template-columns: 380px 1fr;
+                gap: 25px;
+            }
+            .card {
+                padding: 25px;
+            }
+            .card-title {
+                font-size: 18px;
+            }
+            .table-action-bar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .action-left-buttons {
+                flex-direction: row;
+            }
+            .btn-action {
+                width: auto;
+            }
+            .btn-bulk-delete {
+                width: auto;
+            }
+            .btn-outline {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -348,7 +413,7 @@
 <div class="container">
     <header>
         <div class="brand-logo-container">
-            <img id="brand-logo-img" class="brand-logo" alt="Logo VAM Photobox">
+            <img id="brand-logo-img" class="brand-logo" src="logo-vam.png" alt="Logo VAM Photobox">
         </div>
         <h1>Sistem Rekap Antrean VAM Photobox</h1>
         <p>Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time</p>
@@ -432,7 +497,7 @@
             
             <div class="table-action-bar">
                 <div class="action-left-buttons">
-                    <button class="btn-action btn-excel" id="btnExportExcel">Export ke Excel/Spreadsheet</button>
+                    <button class="btn-action btn-excel" id="btnExportExcel">Export ke Excel</button>
                     <button class="btn-action btn-summary-pdf" id="btnCetakSummary">Cetak Ringkasan Pendapatan (PDF)</button>
                 </div>
                 <div>
@@ -469,8 +534,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Data URI Base64 Logo Resmi VAM Photobox 
-    const base64LogoVAM = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFfWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAed3JpdGU6eG1wPgo8P3hwYWNrZXQgYmVnaW49Is+vIiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDkuMS1jMDAyIDc5LjE2NDQ4NCwgMjAyMC8wOC8xMy0xNDowNTo1NiAgICAgICAgIj4KIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgIHhtbG5zOnhtcD0iaHR0cDovL3FzLmFkb2JlLmNvbS94YXAvMS4wLyIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgbottomM9Imh0dHA6Ly9ucy5hZG9iZS5jb20vY29waXJpZ2h0LzEuMC8iCiAgICB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyMS4yIChXaW5kb3dzKSIKICAgIHhtcE1NOkRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOmNoYW5nZWxpc3Q6YmYyMTE3YzItNmM2Ny0xMWVmLThjNzMtOWYxNTJmNjcyY2FiIgog   eG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo1MmFkYjZmNy0zMGEzLTRmNDMtYjBlOS1mNGJlZTNjM2Q2NTIiCiAgICB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0xMC0xN1QxNDo1ODoyNyswNzowMCIKICAgIHhtbG5zOnBkZg9iaW5hcnk9ImZhbHNlIj4KICAgPHhtcDpDcmVhdGVEYXRlPjIwMjQtMTAtMTdUMTQ6NTg6MjcrMDc6MDA8L3htcDpDcmVhdGVEYXRlPgogICA8Y29weXJpZ2h0Ok5vdGljZT4KICAgIDxyZGY6QWx0PgogICAgIDxyZGY6bGkgeG1sOmxhbmc9IngtZGVmYXVsdCI+bW9rdWdyYXBoeTwvcmRmOmxpPgogICAgPC9yZGY6QWx0PgogICA8L2NvcHlyaWdodDpOb3RpY2U+CiAgPC9yZGY6RGVzY3JpcHRpb24+CiA8L3JkZjpSREY+CjwvP3hwYWNrZXQgZW5kPSJ3Ij8+Uv9LcwAACb1JREFUeF7tXAtwVNUZ/u/Nbh7ZJBsChgRIgjwKBsEw8oqgMvWBWhm1ts7Y6TiditU6bZ3p6Dhda9Xp1Dp9tE6dtvWhM7U6bZ0pU6vSgYgWBZ8gDwiYvAmEQLIbyG6y2ST7vafn3mSze++9u8kmuyHZ/8wms3vPOfecb8/X//vPOfcshEKhAnLIdToOn8shByCHXOfp9AAd7Yf7R+mY6LgnHA636X29R09gOtx7Ym3fX099XWInT6G2v97v90vX9v0/Vvsb736/f1vL96d39gSm9XhXg6/XQ7RveMreY28FpH069gM6fH+j68mXfR0h077v8fXQsb9pff8v6HpxreX7X6f9jW9vGgC6vX4tD8m9Fv/XG9bygOve23P1hKbt99C9X6f/vX6N7rXYP3oN9o/eA90D/V7vY9SOnpD98MDo8B7D+fTfNPoO3asw/76v3/vRf9No97pB6b/N+p9Y+w77h/+Vf8vofVv1GvNf9r7V+g4wWvs63bNRfK/VOnA+7Vvsc4fWtcN1WscC9o/et0XrwFofXmNq7XWz1p3BOnVz9Z7S3+Ncs76Wv/767rXG/P+S7n3I9f+Q/l7vffjY0/b/gNYd9t7Xuvm0b79vV637gP9W65rXW/aB82vfm9Z3XOsOeO//rXWtZ87X6wVdr67XfVfXWpby+fX1N/V6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";
+    // Data URL Lokal Logo Resmi VAM Photobox (Menggantikan string base64 yang sangat panjang)
+    const base64LogoVAM = "logo-vam.png";
 
     // Masukkan Konfigurasi SDK Firebase Anda di sini
     const firebaseConfig = {
@@ -490,9 +555,6 @@
 
     let totalAntreanGlobal = 0;
     let currentAntreanList = [];
-
-    // Tampilkan logo Base64 ke elemen gambar header secara instan saat dimuat
-    document.getElementById('brand-logo-img').src = base64LogoVAM;
 
     document.getElementById('antreanForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -708,7 +770,7 @@
         XLSX.writeFile(workbook, `Rekap_Antrean_Photobox_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // CETAK RINGKASAN PENDAPATAN KASIR BESERTA LOGO VAM PHOTOBOX BASE64
+    // CETAK RINGKASAN PENDAPATAN KASIR BESERTA LOGO VAM PHOTOBOX LOCAL/PNG
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
         if (currentAntreanList.length === 0) {
             alert("Tidak ada data antrean untuk membuat laporan ringkasan pendapatan.");
@@ -748,8 +810,11 @@
             format: [80, 165]
         });
 
+        // Menggunakan Gambar Elemen HTML lokal untuk menghindari kegagalan CORS b64
+        const imgLogo = document.getElementById('brand-logo-img');
+
         try {
-            doc.addImage(base64LogoVAM, 'PNG', 31, 6, 18, 18);
+            doc.addImage(imgLogo, 'PNG', 31, 6, 18, 18);
         } catch (e) {
             console.log("Gambar logo gagal dimuat di PDF Ringkasan.");
         }
@@ -802,7 +867,7 @@
         doc.save(`Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
     });
 
-    // GENERATE INVOICE SATUAN KONSUMEN LENGKAP DENGAN LOGO VAM BASE64 & QR CODE TRACKING
+    // GENERATE INVOICE SATUAN KONSUMEN LENGKAP DENGAN LOGO VAM LOCAL & QR CODE TRACKING
     function generateInvoiceWithQR(item) {
         const qrContainer = document.getElementById('qrcode-hidden');
         qrContainer.innerHTML = '';
@@ -832,9 +897,10 @@
             });
 
             const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
+            const imgLogo = document.getElementById('brand-logo-img');
 
             try {
-                doc.addImage(base64LogoVAM, 'PNG', 31, 5, 18, 18);
+                doc.addImage(imgLogo, 'PNG', 31, 5, 18, 18);
             } catch (e) {
                 console.log("Logo VAM gagal dimuat di PDF Struk.");
             }
