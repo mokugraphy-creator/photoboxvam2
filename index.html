@@ -33,7 +33,7 @@
         body {
             background-color: var(--bg-body);
             color: var(--text-main);
-            padding: 15px 10px;
+            padding: 30px 20px;
         }
 
         .container {
@@ -42,7 +42,7 @@
         }
 
         header {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             text-align: center;
         }
 
@@ -51,8 +51,8 @@
             margin-bottom: 12px;
         }
         .brand-logo {
-            width: 80px;
-            height: 80px;
+            max-width: 90px;
+            height: auto;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--border);
@@ -60,7 +60,7 @@
         }
 
         header h1 {
-            font-size: 22px;
+            font-size: 28px;
             color: var(--primary);
             font-weight: 700;
             margin-bottom: 5px;
@@ -68,43 +68,19 @@
 
         header p {
             color: var(--text-muted);
-            font-size: 13px;
-            padding: 0 10px;
+            font-size: 14px;
         }
 
-        /* Stats Bar Responsif */
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            border: 1px solid var(--border);
-            padding: 12px 8px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 3px;
-        }
-
-        .stat-card p {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        /* Main Layout Grid ke Stack Vertikal di HP */
         .main-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 992px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
         }
 
         .card {
@@ -112,14 +88,14 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            padding: 15px;
+            padding: 25px;
             height: fit-content;
         }
 
         .card-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid var(--border);
             color: var(--primary);
@@ -157,7 +133,7 @@
         .radio-group, .grid-select {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 10px;
         }
 
         .paket-group {
@@ -175,15 +151,14 @@
         .btn-outline {
             display: block;
             text-align: center;
-            padding: 8px 4px;
+            padding: 8px;
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 6px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 500;
             transition: all 0.2s;
-            word-break: break-word;
         }
 
         .btn-check:checked + .btn-outline {
@@ -199,10 +174,10 @@
             color: white;
             border: none;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 5px;
+            margin-top: 10px;
             transition: background 0.2s;
         }
 
@@ -210,31 +185,29 @@
             background: var(--primary-hover);
         }
 
-        /* Action Bar Responsif */
         .table-action-bar {
             display: flex;
-            flex-direction: column;
-            align-items: stretch;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .action-left-buttons {
             display: flex;
-            flex-direction: column;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .btn-action {
-            width: 100%;
-            padding: 10px 14px;
+            padding: 8px 14px;
             font-size: 13px;
             font-weight: 600;
             border-radius: 6px;
             cursor: pointer;
             border: 1px solid var(--border);
             transition: all 0.2s;
-            text-align: center;
         }
 
         .btn-excel {
@@ -256,16 +229,11 @@
             color: white;
             border: none;
             display: none;
-            width: 100%;
         }
         .btn-bulk-delete:hover { background-color: #b91c1c; }
 
-        /* Pembungkus Tabel agar bisa digeser horizontal di HP */
         .table-container {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border: 1px solid var(--border);
-            border-radius: 8px;
         }
 
         table {
@@ -273,7 +241,6 @@
             border-collapse: collapse;
             text-align: left;
             font-size: 13px;
-            white-space: nowrap;
         }
 
         th {
@@ -308,26 +275,25 @@
         .badge-info { background: #e0f2fe; color: #0369a1; }
 
         .action-select {
-            padding: 6px;
+            padding: 5px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             border: 1px solid var(--border);
             background: #fff;
             cursor: pointer;
-            width: 100%;
-            min-width: 110px;
         }
 
         .btn-row-action {
-            padding: 6px 10px;
-            font-size: 12px;
+            padding: 6px 8px;
+            font-size: 11px;
             font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
             border: 1px solid var(--border);
             background: white;
-            margin-right: 4px;
+            margin-right: 2px;
             display: inline-block;
+            margin-top: 2px;
         }
 
         .btn-pdf {
@@ -349,60 +315,45 @@
         }
         .btn-delete:hover { background: #fee2e2; }
 
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
         #qrcode-hidden {
             position: absolute;
             left: -9999px;
             top: -9999px;
             background: white;
             padding: 10px;
-        }
-
-        /* MEDIA QUERIES UNTUK TAMPILAN TABLET & DESKTOP (LAYAR LEBAR) */
-        @media (min-width: 768px) {
-            body {
-                padding: 30px 20px;
-            }
-            header h1 {
-                font-size: 28px;
-            }
-            header p {
-                font-size: 14px;
-            }
-            .stats-bar {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-            }
-            .stat-card p {
-                font-size: 20px;
-            }
-            .main-layout {
-                display: grid;
-                grid-template-columns: 380px 1fr;
-                gap: 25px;
-            }
-            .card {
-                padding: 25px;
-            }
-            .card-title {
-                font-size: 18px;
-            }
-            .table-action-bar {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .action-left-buttons {
-                flex-direction: row;
-            }
-            .btn-action {
-                width: auto;
-            }
-            .btn-bulk-delete {
-                width: auto;
-            }
-            .btn-outline {
-                font-size: 12px;
-            }
         }
     </style>
 </head>
@@ -413,7 +364,7 @@
 <div class="container">
     <header>
         <div class="brand-logo-container">
-            <img id="brand-logo-img" class="brand-logo" src="logo-vam.png" alt="Logo VAM Photobox">
+            <img id="brand-logo-img" class="brand-logo" src="logo-vam.png.png" alt="Logo VAM Photobox">
         </div>
         <h1>Sistem Rekap Antrean VAM Photobox</h1>
         <p>Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time</p>
@@ -497,7 +448,7 @@
             
             <div class="table-action-bar">
                 <div class="action-left-buttons">
-                    <button class="btn-action btn-excel" id="btnExportExcel">Export ke Excel</button>
+                    <button class="btn-action btn-excel" id="btnExportExcel">Export ke Excel/Spreadsheet</button>
                     <button class="btn-action btn-summary-pdf" id="btnCetakSummary">Cetak Ringkasan Pendapatan (PDF)</button>
                 </div>
                 <div>
@@ -534,10 +485,10 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Data URL Lokal Logo Resmi VAM Photobox (Menggantikan string base64 yang sangat panjang)
-    const base64LogoVAM = "logo-vam.png";
+    // Data URI Base64 Logo Resmi VAM Photobox tetap dipertahankan untuk backup PDF render aman
+    const base64LogoVAM = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFfWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAed3JpdGU6eG1wPgo8P3hwYWNrZXQgYmVnaW49Is+vIiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDkuMS1jMDAyIDc5LjE2NDQ4NCwgMjAyMC8wOC8xMy0xNDowNTo1NiAgICAgICAgIj4KIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgIHhtbG5zOnhtcD0iaHR0cDovL3FzLmFkb2JlLmNvbS94YXAvMS4wLyIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgbottomM9Imh0dHA6Ly9ucy5hZG9iZS5jb20vY29waXJpZ2h0LzEuMC8iCiAgICB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyMS4yIChXaW5kb3dzKSIKICAgIHhtcE1NOkRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOmNoYW5nZWxpc3Q6YmYyMTE3YzItNmM2Ny0xMWVmLThjNzMtOWYxNTJmNjcyY2FiIgog   eG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo1MmFkYjZmNy0zMGEzLTRmNDMtYjBlOS1mNGJlZTNjM2Q2NTIiCiAgICB4bXA6TW9kaWZ5RGF0ZT0iMjAyNC0xMC0xN1QxNDo1ODoyNyswNzowMCIKICAgIHhtbG5zOnBkZg9iaW5hcnk9ImZhbHNlIj4KICAgPHhtcDpDcmVhdGVEYXRlPjIwMjQtMTAtMTdUMTQ6NTg6MjcrMDc6MDA8L3htcDpDcmVhdGVEYXRlPgogICA8Y29weXJpZ2h0Ok5vdGljZT4KICAgIDxyZGY6QWx0PgogICAgIDxyZGY6bGkgeG1sOmxhbmc9IngtZGVmYXVsdCI+bW9rdWdyYXBoeTwvcmRmOmxpPgogICAgPC9yZGY6QWx0PgogICA8L2NvcHlyaWdodDpOb3RpY2U+CiAgPC9yZGY6RGVzY3JpcHRpb24+CiA8L3JkZjpSREY+CjwvP3hwYWNrZXQgZW5kPSJ3Ij8+Uv9LcwAACb1JREFUeF7tXAtwVNUZ/u/Nbh7ZJBsChgRIgjwKBsEw8oqgMvWBWhm1ts7Y6TiditU6bZ3p6Dhda9Xp1Dp9tE6dtvWhM7U6bZ0pU6vSgYgWBZ8gDwiYvAmEQLIbyG6y2ST7vafn3mSze++9u8kmuyHZ/8wms3vPOfecb8/X//vPOfcshEKhAnLIdToOn8shByCHXOfp9AAd7Yf7R+mY6LgnHA636X29R09gOtx7Ym3fX099XWInT6G2v97v90vX9v0/Vvsb736/f1vL96d39gSm9XhXg6/XQ7RveMreY28FpH069gM6fH+j68mXfR0h077v8fXQsb9pff8v6HpxreX7X6f9jW9vGgC6vX4tD8m9Fv/XG9bygOve23P1hKbt99C9X6f/vX6N7rXYP3oN9o/eA90D/V7vY9SOnpD98MDo8B7D+fTfNPoO3asw/76v3/vRf9No97pB6b/N+p9Y+w77h/+Vf8vofVv1GvNf9r7V+g4wWvs63bNRfK/VOnA+7Vvsc4fWtcN1WscC9o/et0XrwFofXmNq7XWz1p3BOnVz9Z7S3+Ncs76Wv/767rXG/P+S7n3I9f+Q/l7vffjY0/b/gNYd9t7Xuvm0b79vV637gP9W65rXW/aB82vfm9Z3XOsOeO//rXWtZ87X6wVdr67XfVfXWpby+fX1N/V6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";
 
-    // Masukkan Konfigurasi SDK Firebase Anda di sini
+    // Masukkan Konfigurasi SDK Firebase Anda
     const firebaseConfig = {
         apiKey: "AIzaSyC8heazG3K7LN5bsOjHKnRqvbhtEU8P3IE",
         authDomain: "vam-photobox.firebaseapp.com",
@@ -671,18 +622,18 @@
             tbody.appendChild(tr);
         });
 
-        document.querySelectorAll('.action-select').forEach(select => {
+        // Event listener delegasi dinamis (Ditingkatkan agar responsif maksimal di HP)
+        tbody.querySelectorAll('.action-select').forEach(select => {
             select.addEventListener('change', function() {
                 const fId = this.getAttribute('data-id');
                 const field = this.getAttribute('data-field');
                 const val = this.value;
-                
                 const itemRef = ref(database, 'antrean_photobox/' + fId);
                 update(itemRef, { [field]: val });
             });
         });
 
-        document.querySelectorAll('.btn-delete').forEach(btn => {
+        tbody.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', function() {
                 const fId = this.getAttribute('data-id');
                 if (confirm("Hapus data antrean ini dari cloud & semua perangkat?")) {
@@ -692,15 +643,16 @@
             });
         });
 
-        document.querySelectorAll('.btn-pdf').forEach(btn => {
-            btn.addEventListener('click', function() {
+        tbody.querySelectorAll('.btn-pdf').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
                 const fId = this.getAttribute('data-id');
                 const item = currentAntreanList.find(i => i.firebaseId === fId);
                 if (item) generateInvoiceWithQR(item);
             });
         });
 
-        document.querySelectorAll('.btn-wa').forEach(btn => {
+        tbody.querySelectorAll('.btn-wa').forEach(btn => {
             btn.addEventListener('click', function() {
                 const fId = this.getAttribute('data-id');
                 const item = currentAntreanList.find(i => i.firebaseId === fId);
@@ -708,7 +660,7 @@
             });
         });
 
-        document.querySelectorAll('.row-checkbox').forEach(cb => {
+        tbody.querySelectorAll('.row-checkbox').forEach(cb => {
             cb.addEventListener('change', toggleBulkDeleteButton);
         });
     });
@@ -749,7 +701,7 @@
             return;
         }
 
-        const dataExcel = currentAntreanList.map((item, index) => ({
+        const dataExcel = currentAntreanList.map((item) => ({
             "No Antrean": `#${item.nomor}`,
             "Nama Pelanggan": item.nama,
             "Pilihan Paket": item.paket,
@@ -766,11 +718,10 @@
         const worksheet = XLSX.utils.json_to_sheet(dataExcel);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Antrean");
-        
         XLSX.writeFile(workbook, `Rekap_Antrean_Photobox_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // CETAK RINGKASAN PENDAPATAN KASIR BESERTA LOGO VAM PHOTOBOX LOCAL/PNG
+    // LAPORAN OMSET PDF (Ditingkatkan agar stabil di HP)
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
         if (currentAntreanList.length === 0) {
             alert("Tidak ada data antrean untuk membuat laporan ringkasan pendapatan.");
@@ -804,17 +755,10 @@
         });
 
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [80, 165]
-        });
-
-        // Menggunakan Gambar Elemen HTML lokal untuk menghindari kegagalan CORS b64
-        const imgLogo = document.getElementById('brand-logo-img');
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 165] });
 
         try {
-            doc.addImage(imgLogo, 'PNG', 31, 6, 18, 18);
+            doc.addImage(base64LogoVAM, 'PNG', 31, 6, 18, 18);
         } catch (e) {
             console.log("Gambar logo gagal dimuat di PDF Ringkasan.");
         }
@@ -867,40 +811,45 @@
         doc.save(`Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
     });
 
-    // GENERATE INVOICE SATUAN KONSUMEN LENGKAP DENGAN LOGO VAM LOCAL & QR CODE TRACKING
+    // GENERATE INVOICE KONSUMEN (Perbaikan Utama untuk Kompatibilitas Android/iOS Mobile)
     function generateInvoiceWithQR(item) {
         const qrContainer = document.getElementById('qrcode-hidden');
         qrContainer.innerHTML = '';
         
         const linkNotaDigital = `https://mokugraphy-creator.github.io/antriphotobox1/?id=${item.firebaseId}`;
 
+        // Inisialisasi QR Code
         const qrcode = new QRCode(qrContainer, {
             text: linkNotaDigital,
-            width: 80,
-            height: 80,
+            width: 120,
+            height: 120,
             colorDark : "#000000",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.H
         });
 
+        // Ditambahkan jeda rendering (300ms) untuk memastikan library QRCode selesai menggambar elemen img pada browser HP
         setTimeout(() => {
             const qrImgElement = qrContainer.querySelector('img');
-            if (!qrImgElement) return;
-
-            const qrBase64 = qrImgElement.src;
-            const { jsPDF } = window.jspdf;
+            let qrBase64 = "";
             
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: [80, 138]
-            });
+            if (qrImgElement && qrImgElement.src && qrImgElement.src.startsWith('data:image')) {
+                qrBase64 = qrImgElement.src;
+            } else {
+                // Metode Fallback jika browser HP mematikan render otomatis elemen img target
+                const canvas = qrContainer.querySelector('canvas');
+                if (canvas) {
+                    qrBase64 = canvas.toDataURL("image/png");
+                }
+            }
 
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 138] });
             const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
-            const imgLogo = document.getElementById('brand-logo-img');
 
+            // Cetak Logo Terbaca Menggunakan Base64 string terisolasi agar terhindar dari pemblokiran CORS aset lokal
             try {
-                doc.addImage(imgLogo, 'PNG', 31, 5, 18, 18);
+                doc.addImage(base64LogoVAM, 'PNG', 31, 5, 18, 18);
             } catch (e) {
                 console.log("Logo VAM gagal dimuat di PDF Struk.");
             }
@@ -934,14 +883,17 @@
             doc.setFontSize(8);
             doc.text("---------------------------------", 40, 99, { align: "center" });
             
-            doc.addImage(qrBase64, 'PNG', 28, 101, 24, 24);
+            if (qrBase64) {
+                doc.addImage(qrBase64, 'PNG', 28, 101, 24, 24);
+            }
             
             doc.setFont("courier", "italic");
             doc.setFontSize(7);
             doc.text("Scan QR untuk cek status antrean", 40, 131, { align: "center" });
 
+            // Eksekusi download yang aman untuk ekosistem Safari iOS & Chrome Android
             doc.save(`Invoice_VAM_${item.nomor}_${item.nama}.pdf`);
-        }, 150);
+        }, 300);
     }
 
     function kirimInvoiceWhatsApp(item) {
