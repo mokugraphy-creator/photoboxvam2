@@ -46,16 +46,17 @@
             text-align: center;
         }
 
-        /* Wrapper Logo Brand Utama di Atas Aplikasi */
+        /* Desain Frame Bundar Logo Aplikasi Utama */
         .brand-logo-container {
             margin-bottom: 12px;
         }
         .brand-logo {
-            max-width: 85px;
+            max-width: 90px;
             height: auto;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         header h1 {
@@ -208,7 +209,6 @@
         }
         .btn-excel:hover { background-color: #15803d; }
 
-        /* Style Tombol Cetak Ringkasan Pendapatan Baru */
         .btn-summary-pdf {
             background-color: #0284c7;
             color: white;
@@ -344,12 +344,12 @@
 <body>
 
 <div id="qrcode-hidden"></div>
-<img id="logo-source" src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=120&auto=format&fit=crop" style="display:none;" crossorigin="anonymous" alt="Logo Source">
+<img id="logo-source" src="https://docs.google.com/uc?export=download&id=1ZHLoEWzQ7B3W2NB1Vs_kkifPLrbAzN9d" style="display:none;" crossorigin="anonymous" alt="Logo Source">
 
 <div class="container">
     <header>
         <div class="brand-logo-container">
-            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=120&auto=format&fit=crop" class="brand-logo" alt="Logo VAM Photobox">
+            <img src="https://docs.google.com/uc?export=download&id=1ZHLoEWzQ7B3W2NB1Vs_kkifPLrbAzN9d" class="brand-logo" alt="Logo VAM Photobox">
         </div>
         <h1>Sistem Rekap Antrean Photobox</h1>
         <p>Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time</p>
@@ -702,14 +702,13 @@
         XLSX.writeFile(workbook, `Rekap_Antrean_Photobox_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // IMPLEMENTASI FITUR BARU: CETAK RINGKASAN SELURUH HASIL ANTRIAN & TOTAL NOMINAL PENDAPATAN KASIR
+    // CETAK RINGKASAN PENDAPATAN KASIR BESERTA LOGO VAM PHOTOBOX ASLI
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
         if (currentAntreanList.length === 0) {
             alert("Tidak ada data antrean untuk membuat laporan ringkasan pendapatan.");
             return;
         }
 
-        // 1. Kalkulasi Akumulasi Data Keuangan Kasir & Jumlah Produksi Cetak
         let totalPendapatan = 0;
         let totalLembarCetak = 0;
         let hitungCash = 0;
@@ -736,21 +735,19 @@
             if (item.statusCetak === "Tidak Cetak") produksiTidakCetak++;
         });
 
-        // 2. Inisialisasi Lembar Cetak Dokumen PDF Ringkasan Kasir
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: [80, 165] // Ukuran thermal diperpanjang untuk memuat kompilasi data statistik lengkap
+            format: [80, 165]
         });
 
         const logoImg = document.getElementById('logo-source');
 
-        // Memasukkan Logo Toko di atas dokumen ringkasan finansial
         try {
             doc.addImage(logoImg, 'JPEG', 31, 6, 18, 18);
         } catch (e) {
-            console.log("Gambar logo belum terunggah sempurna, melewati rendering gambar.");
+            console.log("Gambar logo gagal dimuat di PDF Ringkasan.");
         }
 
         doc.setFont("courier", "bold");
@@ -763,7 +760,6 @@
         doc.text(`Waktu Cetak: ${new Date().toLocaleString('id-ID')}`, 5, 40);
         doc.text("---------------------------------", 40, 44, { align: "center" });
 
-        // Kompilasi kuantitas hasil antrean & status produksi cetak
         doc.setFont("courier", "bold");
         doc.text("STATISTIK PRODUKSI ANTRIAN:", 5, 50);
         doc.setFont("courier", "normal");
@@ -777,7 +773,6 @@
 
         doc.text("---------------------------------", 40, 91, { align: "center" });
 
-        // Kompilasi Nominal Keuntungan dan Metode Pembayaran
         doc.setFont("courier", "bold");
         doc.text("RINCIAN NOMINAL PENDAPATAN:", 5, 97);
         doc.setFont("courier", "normal");
@@ -793,7 +788,6 @@
         doc.setFontSize(8);
         doc.text("---------------------------------", 40, 127, { align: "center" });
         
-        // Slot tanda tangan penanggung jawab mesin kasir photobox
         doc.text("Pemeriksa / Kasir,", 5, 134);
         doc.text("(__________________)", 5, 154);
 
@@ -804,6 +798,7 @@
         doc.save(`Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
     });
 
+    // GENERATE INVOICE SATUAN KONSUMEN LENGKAP DENGAN LOGO VAM ASLI & QR CODE TRACKING
     function generateInvoiceWithQR(item) {
         const qrContainer = document.getElementById('qrcode-hidden');
         qrContainer.innerHTML = '';
@@ -829,7 +824,7 @@
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
-                format: [80, 138] // Ukuran dinaikkan dikit agar muat sematan logo toko di atas struk
+                format: [80, 138]
             });
 
             const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
@@ -838,7 +833,7 @@
             try {
                 doc.addImage(logoImg, 'JPEG', 31, 5, 18, 18);
             } catch (e) {
-                console.log("Logo belum termuat penuh.");
+                console.log("Logo VAM gagal dimuat di PDF Struk.");
             }
 
             doc.setFont("courier", "bold");
@@ -919,10 +914,10 @@ Halo Kak *${item.nama.toUpperCase()}*, berikut adalah detail rincian transaksi p
 🟢 *Status Antrean Saat Ini:* _${item.statusAntrean}_
 🟢 *Status Produksi Cetak:* _${item.statusCetak}_
 
-Kakak bisa memantau status antrean  secara real-time melalui tauatan resmi di bawah ini:
+Kakak bisa memantau status antrean atau download hasil foto digital secara real-time melalui tahuatan resmi di bawah ini:
 🔗 ${linkTracking}
 
-Jangan Lupa Follow akun media sosial kami di intagram vamphotoooth Terima kasih banyak atas kunjungan Anda! ✨`
+Terima kasih banyak atas kunjungan Anda! ✨`
         );
 
         const urlWhatsApp = `https://api.whatsapp.com/send?phone=${noHP}&text=${teksPesan}`;
