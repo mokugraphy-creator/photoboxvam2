@@ -46,7 +46,7 @@
             text-align: center;
         }
 
-        /* Desain Frame Logo: Dibuat fleksibel tanpa memotong gambar asli */
+        /* PERBAIKAN: Desain kontainer logo disesuaikan agar rasio asli terjaga */
         .brand-logo-container {
             margin-bottom: 12px;
             display: flex;
@@ -54,11 +54,15 @@
             align-items: center;
         }
         .brand-logo {
+            height: 80px;
             width: auto;
-            max-width: 120px;
-            height: 65px;
-            object-fit: contain; /* Memastikan logo pas dan tidak terpotong */
-            border-radius: 0; /* Menghilangkan bentuk bundar yang memotong teks logo */
+            max-width: 200px;
+            object-fit: contain;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         header h1 {
@@ -102,7 +106,7 @@
             font-weight: 700;
         }
 
-        /* Main Layout Grid */
+        /* Main Layout Grid ke Stack Vertikal di HP */
         .main-layout {
             display: flex;
             flex-direction: column;
@@ -262,7 +266,7 @@
         }
         .btn-bulk-delete:hover { background-color: #b91c1c; }
 
-        /* Pembungkus Tabel */
+        /* Pembungkus Tabel agar bisa digeser horizontal di HP */
         .table-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -359,20 +363,52 @@
             padding: 10px;
         }
 
+        /* MEDIA QUERIES UNTUK TAMPILAN TABLET & DESKTOP (LAYAR LEBAR) */
         @media (min-width: 768px) {
-            body { padding: 30px 20px; }
-            header h1 { font-size: 28px; }
-            header p { font-size: 14px; }
-            .stats-bar { grid-template-columns: repeat(4, 1fr); gap: 15px; }
-            .stat-card p { font-size: 20px; }
-            .main-layout { grid-template-columns: 380px 1fr; gap: 25px; }
-            .card { padding: 25px; }
-            .card-title { font-size: 18px; }
-            .table-action-bar { flex-direction: row; justify-content: space-between; align-items: center; }
-            .action-left-buttons { flex-direction: row; }
-            .btn-action { width: auto; }
-            .btn-bulk-delete { width: auto; }
-            .btn-outline { font-size: 12px; }
+            body {
+                padding: 30px 20px;
+            }
+            header h1 {
+                font-size: 28px;
+            }
+            header p {
+                font-size: 14px;
+            }
+            .stats-bar {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+            .stat-card p {
+                font-size: 20px;
+            }
+            .main-layout {
+                display: grid;
+                grid-template-columns: 380px 1fr;
+                gap: 25px;
+            }
+            .card {
+                padding: 25px;
+            }
+            .card-title {
+                font-size: 18px;
+            }
+            .table-action-bar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .action-left-buttons {
+                flex-direction: row;
+            }
+            .btn-action {
+                width: auto;
+            }
+            .btn-bulk-delete {
+                width: auto;
+            }
+            .btn-outline {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -522,18 +558,31 @@
     let totalAntreanGlobal = 0;
     let currentAntreanList = [];
 
-    // Fungsi Pembantu untuk Mengunduh PDF di HP dengan Aman
-    function downloadPDFMobile(doc, filename) {
-        if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-            // Untuk HP: Konversi ke Base64 Data URI dan buka di tab baru agar tidak diblokir system download
+    // PERBAIKAN GLOBAL: Fungsi pembantu kalkulasi dimensi gambar agar rasio tetap proposional di PDF
+    function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
+        const ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
+        return { width: srcWidth * ratio, height: srcHeight * ratio };
+    }
+
+    // PERBAIKAN GLOBAL: Fungsi pemicu download Blob PDF yang tangguh dan responsif di browser HP/Mobile
+    function triggerPDFDownload(doc, filename) {
+        try {
             const blob = doc.output('blob');
             const blobURL = URL.createObjectURL(blob);
-            const newWindow = window.open(blobURL, '_blank');
-            if(!newWindow) {
-                alert("Mohon izinkan pop-up pada browser HP Anda agar berkas PDF Invoice dapat diunduh.");
-            }
-        } else {
-            // Untuk Komputer/Laptop: Langsung download otomatis
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobURL;
+            downloadLink.download = filename;
+            downloadLink.target = '_blank';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            
+            // Pembersihan memori browser setelah interaksi klik selesai
+            setTimeout(() => {
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(blobURL);
+            }, 300);
+        } catch (error) {
+            console.error("Gagal mendownload PDF via Blob, menggunakan fallback standard:", error);
             doc.save(filename);
         }
     }
@@ -653,12 +702,12 @@
             tbody.appendChild(tr);
         });
 
-        // Event listener pasca render tabel
         document.querySelectorAll('.action-select').forEach(select => {
             select.addEventListener('change', function() {
                 const fId = this.getAttribute('data-id');
                 const field = this.getAttribute('data-field');
                 const val = this.value;
+                
                 const itemRef = ref(database, 'antrean_photobox/' + fId);
                 update(itemRef, { [field]: val });
             });
@@ -748,10 +797,11 @@
         const worksheet = XLSX.utils.json_to_sheet(dataExcel);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Antrean");
+        
         XLSX.writeFile(workbook, `Rekap_Antrean_Photobox_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // 1. Perbaikan Cetak PDF Ringkasan Pendapatan (Logo Proporsional & HP Support)
+    // PERBAIKAN: Cetak ringkasan laporan pendapatan dengan kalkulasi rasio logo dinamis
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
         if (currentAntreanList.length === 0) {
             alert("Tidak ada data antrean untuk membuat laporan ringkasan pendapatan.");
@@ -788,67 +838,70 @@
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: [80, 175]
+            format: [80, 165]
         });
 
         const imgLogo = document.getElementById('brand-logo-img');
 
+        // Kalkulasi rasio pas untuk logo di area max lebar 32mm & tinggi 16mm
         try {
-            // Ukuran Dioptimalkan Berdasarkan Rasio Asli Landscape Logo VAM (44mm x 24mm) agar tidak terpotong
-            doc.addImage(imgLogo, 'JPEG', 18, 6, 44, 24);
+            const dimensions = calculateAspectRatioFit(imgLogo.naturalWidth || 100, imgLogo.naturalHeight || 100, 32, 16);
+            const posX = (80 - dimensions.width) / 2; // Auto-center horizontal
+            doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
         } catch (e) {
             console.log("Gambar logo gagal dimuat di PDF Ringkasan.");
         }
 
         doc.setFont("courier", "bold");
         doc.setFontSize(11);
-        doc.text("LAPORAN RINGKASAN PENDAPATAN", 40, 36, { align: "center" });
-        doc.text("VAM PHOTOBOX", 40, 40, { align: "center" });
+        doc.text("LAPORAN RINGKASAN PENDAPATAN", 40, 29, { align: "center" });
+        doc.text("VAM PHOTOBOX", 40, 33, { align: "center" });
         
         doc.setFont("courier", "normal");
         doc.setFontSize(8);
-        doc.text(`Waktu Cetak: ${new Date().toLocaleString('id-ID')}`, 5, 47);
-        doc.text("---------------------------------", 40, 51, { align: "center" });
+        doc.text(`Waktu Cetak: ${new Date().toLocaleString('id-ID')}`, 5, 40);
+        doc.text("---------------------------------", 40, 44, { align: "center" });
 
         doc.setFont("courier", "bold");
-        doc.text("STATISTIK PRODUKSI ANTRIAN:", 5, 57);
+        doc.text("STATISTIK PRODUKSI ANTRIAN:", 5, 50);
         doc.setFont("courier", "normal");
-        doc.text(`Total Antrean Masuk : ${currentAntreanList.length} Transaksi`, 5, 62);
-        doc.text(`Status Menunggu     : ${antreanMenunggu} Orang`, 5, 67);
-        doc.text(`Status Selesai Foto : ${antreanSelesaiFoto} Orang`, 5, 72);
-        doc.text(`Status Belum Cetak  : ${produksiBelumCetak} Pesanan`, 5, 77);
-        doc.text(`Status Selesai Cetak: ${produksiSelesaiCetak} Pesanan`, 5, 82);
-        doc.text(`Paket Tanpa Cetak   : ${produksiTidakCetak} File Only`, 5, 87);
-        doc.text(`Akumulasi Kertas    : ${totalLembarCetak} Lembar`, 5, 92);
+        doc.text(`Total Antrean Masuk : ${currentAntreanList.length} Transaksi`, 5, 55);
+        doc.text(`Status Menunggu     : ${antreanMenunggu} Orang`, 5, 60);
+        doc.text(`Status Selesai Foto : ${antreanSelesaiFoto} Orang`, 5, 65);
+        doc.text(`Status Belum Cetak  : ${produksiBelumCetak} Pesanan`, 5, 70);
+        doc.text(`Status Selesai Cetak: ${produksiSelesaiCetak} Pesanan`, 5, 75);
+        doc.text(`Paket Tanpa Cetak   : ${produksiTidakCetak} File Only`, 5, 80);
+        doc.text(`Akumulasi Kertas    : ${totalLembarCetak} Lembar`, 5, 85);
 
-        doc.text("---------------------------------", 40, 98, { align: "center" });
+        doc.text("---------------------------------", 40, 91, { align: "center" });
 
         doc.setFont("courier", "bold");
-        doc.text("RINCIAN NOMINAL PENDAPATAN:", 5, 104);
+        doc.text("RINCIAN NOMINAL PENDAPATAN:", 5, 97);
         doc.setFont("courier", "normal");
-        doc.text(`Pendapatan Cash     : Rp ${hitungCash.toLocaleString('id-ID')}`, 5, 110);
-        doc.text(`Pendapatan QRIS     : Rp ${hitungQris.toLocaleString('id-ID')}`, 5, 115);
+        doc.text(`Pendapatan Cash     : Rp ${hitungCash.toLocaleString('id-ID')}`, 5, 103);
+        doc.text(`Pendapatan QRIS     : Rp ${hitungQris.toLocaleString('id-ID')}`, 5, 108);
         
-        doc.text("---------------------------------", 40, 121, { align: "center" });
+        doc.text("---------------------------------", 40, 114, { align: "center" });
         doc.setFont("courier", "bold");
         doc.setFontSize(10);
-        doc.text(`TOTAL OMSET  : Rp ${totalPendapatan.toLocaleString('id-ID')}`, 5, 128);
+        doc.text(`TOTAL OMSET  : Rp ${totalPendapatan.toLocaleString('id-ID')}`, 5, 121);
         
         doc.setFont("courier", "normal");
         doc.setFontSize(8);
-        doc.text("---------------------------------", 40, 134, { align: "center" });
+        doc.text("---------------------------------", 40, 127, { align: "center" });
         
-        doc.text("Pemeriksa / Kasir,", 5, 141);
-        doc.text("(__________________)", 5, 161);
+        doc.text("Pemeriksa / Kasir,", 5, 134);
+        doc.text("(__________________)", 5, 154);
 
         doc.setFont("courier", "italic");
         doc.setFontSize(7);
-        doc.text("Sistem Rekap Real-time Cloud VAM", 40, 169, { align: "center" });
+        doc.text("Sistem Rekap Real-time Cloud VAM", 40, 161, { align: "center" });
 
-        downloadPDFMobile(doc, `Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
+        // Unduh PDF menggunakan handler universal mobile & desktop
+        triggerPDFDownload(doc, `Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
     });
 
-    // 2. Perbaikan Invoice Satuan (Logo Proporsional & HP Support)
+    // PERBAIKAN: Fungsi cetak invoice satuan per konsumen dengan perbaikan total rasio logo & download di HP
     function generateInvoiceWithQR(item) {
         const qrContainer = document.getElementById('qrcode-hidden');
         qrContainer.innerHTML = '';
@@ -869,60 +922,63 @@
             if (!qrImgElement) return;
 
             const qrBase64 = qrImgElement.src;
-            const { jsPDF } = window.jspdf;
             
+            const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
-                format: [80, 145]
+                format: [80, 138]
             });
 
             const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
             const imgLogo = document.getElementById('brand-logo-img');
 
+            // Menghitung rasio pas untuk struk belanja agar tidak memotong teks samping logo
             try {
-                // Menyesuaikan rasio landscape asli logo VAM (44mm x 24mm) agar proporsional dan presisi
-                doc.addImage(imgLogo, 'JPEG', 18, 5, 44, 24);
+                const dimensions = calculateAspectRatioFit(imgLogo.naturalWidth || 100, imgLogo.naturalHeight || 100, 32, 16);
+                const posX = (80 - dimensions.width) / 2; // Tengahkan logo secara horizontal
+                doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
             } catch (e) {
                 console.log("Logo VAM gagal dimuat di PDF Struk.");
             }
 
             doc.setFont("courier", "bold");
             doc.setFontSize(12);
-            doc.text("VAM PHOTOBOX", 40, 34, { align: "center" });
+            doc.text("VAM PHOTOBOX", 40, 28, { align: "center" });
             doc.setFont("courier", "normal");
             doc.setFontSize(8);
-            doc.text("---------------------------------", 40, 38, { align: "center" });
+            doc.text("---------------------------------", 40, 32, { align: "center" });
             
-            doc.text(`No. Antrean: #${item.nomor}`, 5, 44);
-            doc.text(`Tanggal    : ${new Date(item.timestamp).toLocaleDateString('id-ID')}`, 5, 48);
-            doc.text(`Nama       : ${item.nama.toUpperCase()}`, 5, 52);
-            doc.text("---------------------------------", 40, 58, { align: "center" });
+            doc.text(`No. Antrean: #${item.nomor}`, 5, 38);
+            doc.text(`Tanggal    : ${new Date(item.timestamp).toLocaleDateString('id-ID')}`, 5, 42);
+            doc.text(`Nama       : ${item.nama.toUpperCase()}`, 5, 46);
+            doc.text("---------------------------------", 40, 52, { align: "center" });
 
             doc.setFont("courier", "bold");
-            doc.text("Rincian Pesanan:", 5, 64);
+            doc.text("Rincian Pesanan:", 5, 58);
             doc.setFont("courier", "normal");
-            doc.text(`${item.paket}`, 5, 70);
-            doc.text(`Frame Pilihan : ${item.frame}`, 5, 75);
-            doc.text(`Jumlah Cetak  : ${item.jumlahCetak} Lembar`, 5, 80);
-            doc.text(`Metode Bayar  : ${item.pembayaran}`, 5, 85);
+            doc.text(`${item.paket}`, 5, 64);
+            doc.text(`Frame Pilihan : ${item.frame}`, 5, 69);
+            doc.text(`Jumlah Cetak  : ${item.jumlahCetak} Lembar`, 5, 74);
+            doc.text(`Metode Bayar  : ${item.pembayaran}`, 5, 79);
             
-            doc.text("---------------------------------", 40, 92, { align: "center" });
+            doc.text("---------------------------------", 40, 86, { align: "center" });
             doc.setFont("courier", "bold");
             doc.setFontSize(10);
-            doc.text(`TOTAL BAYAR: Rp ${hargaTotal}`, 5, 99);
+            doc.text(`TOTAL BAYAR: Rp ${hargaTotal}`, 5, 93);
             
             doc.setFont("courier", "normal");
             doc.setFontSize(8);
-            doc.text("---------------------------------", 40, 105, { align: "center" });
+            doc.text("---------------------------------", 40, 99, { align: "center" });
             
-            doc.addImage(qrBase64, 'PNG', 28, 108, 24, 24);
+            doc.addImage(qrBase64, 'PNG', 28, 101, 24, 24);
             
             doc.setFont("courier", "italic");
             doc.setFontSize(7);
-            doc.text("Scan QR untuk cek status antrean", 40, 138, { align: "center" });
+            doc.text("Scan QR untuk cek status antrean", 40, 131, { align: "center" });
 
-            downloadPDFMobile(doc, `Invoice_VAM_${item.nomor}_${item.nama}.pdf`);
+            // Unduh file invoice digital menggunakan handler universal aman mobile terverifikasi
+            triggerPDFDownload(doc, `Invoice_VAM_${item.nomor}_${item.nama}.pdf`);
         }, 200);
     }
 
