@@ -263,7 +263,7 @@
     <div class="main-layout">
         <div class="card">
             <div class="card-title">Input Antrean Baru</div>
-            <form id="antreanForm" onsubmit="simpanAntrean(event)">
+            <form id="antreanForm">
                 <div class="form-group">
                     <label for="nama">Nama Pelanggan</label>
                     <input type="text" id="nama" class="form-control" placeholder="Masukkan nama..." required>
@@ -347,23 +347,44 @@
     </div>
 </div>
 
-<script>
-    let antreanData = [];
-    let nomorAntreanTerakhir = 0;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    function simpanAntrean(e) {
+    // Konfigurasi resmi proyek vam-photobox milikmu
+    const firebaseConfig = {
+        apiKey: "AIzaSyC8heazG3K7LN5bsOjHKnRqvbhtEU8P3IE",
+        authDomain: "vam-photobox.firebaseapp.com",
+        databaseURL: "https://vam-photobox-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "vam-photobox",
+        storageBucket: "vam-photobox.firebasestorage.app",
+        messagingSenderId: "1012512296328",
+        appId: "1:1012512296328:web:f1d2b53f9d83e8ef9afe3d",
+        measurementId: "G-802TPJTYR9"
+    };
+
+    // Inisialisasi Firebase & Referensi Database
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const dbRef = ref(database, 'antrean_photobox');
+
+    let totalAntreanGlobal = 0;
+
+    // 1. INPUT ANTREAN BARU & KIRIM KE FIREBASE
+    document.getElementById('antreanForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        nomorAntreanTerakhir++;
-        
+
         const nama = document.getElementById('nama').value;
         const paket = document.querySelector('input[name="paket"]:checked').value;
         const jumlahCetak = document.getElementById('jumlahCetak').value;
         const pembayaran = document.querySelector('input[name="pembayaran"]:checked').value;
         const frame = document.querySelector('input[name="frame"]:checked').value;
 
+        // Nomor otomatis bertambah sinkron dari database cloud
+        const nomorBaru = totalAntreanGlobal + 1;
+
         const dataBaru = {
-            id: Date.now(),
-            nomor: nomorAntreanTerakhir,
+            nomor: nomorBaru,
             nama: nama,
             paket: paket,
             jumlahCetak: jumlahCetak,
@@ -371,52 +392,46 @@
             frame: frame,
             statusAntrean: 'Menunggu',
             statusCetak: paket.includes("FILE ONLY") ? 'Tidak Cetak' : 'Belum Cetak',
-            statusAmbil: 'Belum Diambil'
+            statusAmbil: 'Belum Diambil',
+            timestamp: Date.now()
         };
 
-        antreanData.push(dataBaru);
-        renderTable();
-        updateStats();
+        // Kirim data online ke cloud firebase
+        push(dbRef, dataBaru);
 
+        // Reset Input form setelah sukses kirim
         document.getElementById('nama').value = '';
         document.getElementById('jumlahCetak').value = '1';
-    }
+    });
 
-    function hapusAntrean(id) {
-        if(confirm("Hapus data antrean ini?")) {
-            antreanData = antreanData.filter(item => item.id !== id);
-            renderTable();
-            updateStats();
-        }
-    }
-
-    function ubahStatus(id, field, value) {
-        const index = antreanData.findIndex(item => item.id === id);
-        if(index !== -1) {
-            antreanData[index][field] = value;
-            updateStats();
-            renderTable();
-        }
-    }
-
-    function updateStats() {
-        document.getElementById('stat-total').innerText = antreanData.length;
-        document.getElementById('stat-menunggu').innerText = antreanData.filter(i => i.statusAntrean === 'Menunggu').length;
-        document.getElementById('stat-belum-cetak').innerText = antreanData.filter(i => i.statusCetak === 'Belum Cetak').length;
-        document.getElementById('stat-belum-ambil').innerText = antreanData.filter(i => i.statusAmbil === 'Belum Diambil' && !i.paket.includes("FILE ONLY")).length;
-    }
-
-    function renderTable() {
+    // 2. AMBIL DATA REAL-TIME & SINKRONKAN KE SEMUA PERANGKAT
+    onValue(dbRef, (snapshot) => {
         const tbody = document.getElementById('listAntrean');
         tbody.innerHTML = '';
+        
+        const data = snapshot.val();
 
-        if(antreanData.length === 0) {
+        if (!data) {
+            totalAntreanGlobal = 0;
+            updateStats([]);
             tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--text-muted); padding: 30px;">Belum ada antrean hari ini.</td></tr>`;
             return;
         }
 
-        antreanData.forEach(item => {
+        // Ubah objek Firebase menjadi array dan urutkan berdasarkan waktu input
+        const antreanList = [];
+        for (let firebaseId in data) {
+            antreanList.push({ firebaseId, ...data[firebaseId] });
+        }
+        antreanList.sort((a, b) => a.timestamp - b.timestamp);
+
+        totalAntreanGlobal = antreanList.length;
+        updateStats(antreanList);
+
+        // Render baris tabel secara real-time ke layar browser
+        antreanList.forEach(item => {
             const tr = document.createElement('tr');
+            
             let badgeAntrean = `<span class="badge ${item.statusAntrean === 'Menunggu' ? 'badge-waiting' : 'badge-success'}">${item.statusAntrean}</span>`;
             let badgeCetak = item.statusCetak === 'Tidak Cetak' ? `<span class="badge badge-info">Tidak Cetak</span>` : `<span class="badge ${item.statusCetak === 'Belum Cetak' ? 'badge-warning' : 'badge-success'}">${item.statusCetak}</span>`;
             let badgeAmbil = `<span class="badge ${item.statusAmbil === 'Belum Diambil' ? 'badge-waiting' : 'badge-success'}">${item.statusAmbil}</span>`;
@@ -430,7 +445,7 @@
                 <td><span class="badge" style="background:#e2e8f0; color:#475569">${item.pembayaran}</span></td>
                 <td>
                     ${badgeAntrean}<br>
-                    <select class="action-select" style="margin-top:5px" onchange="ubahStatus(${item.id}, 'statusAntrean', this.value)">
+                    <select class="action-select" style="margin-top:5px" data-id="${item.firebaseId}" data-field="statusAntrean">
                         <option value="Menunggu" ${item.statusAntrean === 'Menunggu' ? 'selected' : ''}>Menunggu</option>
                         <option value="Selesai Foto" ${item.statusAntrean === 'Selesai Foto' ? 'selected' : ''}>Selesai Foto</option>
                     </select>
@@ -438,22 +453,53 @@
                 <td>
                     ${badgeCetak}<br>
                     ${item.paket.includes("PAKET CETAK") ? `
-                    <select class="action-select" style="margin-top:5px" onchange="ubahStatus(${item.id}, 'statusCetak', this.value)">
+                    <select class="action-select" style="margin-top:5px" data-id="${item.firebaseId}" data-field="statusCetak">
                         <option value="Belum Cetak" ${item.statusCetak === 'Belum Cetak' ? 'selected' : ''}>Belum Cetak</option>
                         <option value="Selesai Cetak" ${item.statusCetak === 'Selesai Cetak' ? 'selected' : ''}>Selesai Cetak</option>
                     </select>` : ''}
                 </td>
                 <td>
                     ${badgeAmbil}<br>
-                    <select class="action-select" style="margin-top:5px" onchange="ubahStatus(${item.id}, 'statusAmbil', this.value)">
+                    <select class="action-select" style="margin-top:5px" data-id="${item.firebaseId}" data-field="statusAmbil">
                         <option value="Belum Diambil" ${item.statusAmbil === 'Belum Diambil' ? 'selected' : ''}>Belum Diambil</option>
                         <option value="Sudah Diambil" ${item.statusAmbil === 'Sudah Diambil' ? 'selected' : ''}>Sudah Diambil</option>
                     </select>
                 </td>
-                <td><button class="btn-delete" onclick="hapusAntrean(${item.id})">Hapus</button></td>
+                <td><button class="btn-delete" data-id="${item.firebaseId}">Hapus</button></td>
             `;
             tbody.appendChild(tr);
         });
+
+        // Event listener update drop-down status secara langsung ke cloud
+        document.querySelectorAll('.action-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const fId = this.getAttribute('data-id');
+                const field = this.getAttribute('data-field');
+                const val = this.value;
+                
+                const itemRef = ref(database, 'antrean_photobox/' + fId);
+                update(itemRef, { [field]: val });
+            });
+        });
+
+        // Event listener tombol hapus data secara langsung di cloud
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const fId = this.getAttribute('data-id');
+                if (confirm("Hapus data antrean ini dari cloud & semua perangkat?")) {
+                    const itemRef = ref(database, 'antrean_photobox/' + fId);
+                    remove(itemRef);
+                }
+            });
+        });
+    });
+
+    // 3. REKAPAN KOTAK STATISTIK ATAS SECARA ONLINE
+    function updateStats(list) {
+        document.getElementById('stat-total').innerText = list.length;
+        document.getElementById('stat-menunggu').innerText = list.filter(i => i.statusAntrean === 'Menunggu').length;
+        document.getElementById('stat-belum-cetak').innerText = list.filter(i => i.statusCetak === 'Belum Cetak').length;
+        document.getElementById('stat-belum-ambil').innerText = list.filter(i => i.statusAmbil === 'Belum Diambil' && !i.paket.includes("FILE ONLY")).length;
     }
 </script>
 </body>
