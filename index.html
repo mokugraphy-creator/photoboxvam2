@@ -46,7 +46,7 @@
             text-align: center;
         }
 
-        /* DESAIN LOGO: Rasio asli terjaga, tidak berbentuk lingkaran/terpotong */
+        /* PERBAIKAN: Desain kontainer logo disesuaikan agar rasio asli terjaga */
         .brand-logo-container {
             margin-bottom: 12px;
             display: flex;
@@ -558,32 +558,31 @@
     let totalAntreanGlobal = 0;
     let currentAntreanList = [];
 
-    // FUNGSI PEMBANTU: Menghitung rasio gambar agar proporsional di dalam area PDF
+    // PERBAIKAN GLOBAL: Fungsi pembantu kalkulasi dimensi gambar agar rasio tetap proposional di PDF
     function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
         const ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
         return { width: srcWidth * ratio, height: srcHeight * ratio };
     }
 
-    // PERBAIKAN: Fungsi pemicu download PDF universal yang kompatibel untuk HP & Desktop
+    // PERBAIKAN GLOBAL: Fungsi pemicu download Blob PDF yang tangguh dan responsif di browser HP/Mobile
     function triggerPDFDownload(doc, filename) {
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (isMobile) {
-            try {
-                // Di HP, konversi langsung dokumen ke format Data URI string dan buka di window/tab baru agar bisa disimpan langsung
-                const pdfDataUri = doc.output('datauristring');
-                const newWindow = window.open();
-                if (newWindow) {
-                    newWindow.document.write(`<iframe src="${pdfDataUri}" style="width:100%; height:100%; border:none;"></iframe>`);
-                } else {
-                    // Fallback jika tab baru diblokir oleh sistem keamanan popup browser HP
-                    doc.save(filename);
-                }
-            } catch (e) {
-                doc.save(filename);
-            }
-        } else {
-            // Untuk PC / Desktop tetap menggunakan metode unduhan langsung standard bawaan jsPDF
+        try {
+            const blob = doc.output('blob');
+            const blobURL = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobURL;
+            downloadLink.download = filename;
+            downloadLink.target = '_blank';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            
+            // Pembersihan memori browser setelah interaksi klik selesai
+            setTimeout(() => {
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(blobURL);
+            }, 300);
+        } catch (error) {
+            console.error("Gagal mendownload PDF via Blob, menggunakan fallback standard:", error);
             doc.save(filename);
         }
     }
@@ -802,7 +801,7 @@
         XLSX.writeFile(workbook, `Rekap_Antrean_Photobox_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // Ringkasan Pendapatan PDF
+    // PERBAIKAN: Cetak ringkasan laporan pendapatan dengan kalkulasi rasio logo dinamis
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
         if (currentAntreanList.length === 0) {
             alert("Tidak ada data antrean untuk membuat laporan ringkasan pendapatan.");
@@ -844,10 +843,10 @@
 
         const imgLogo = document.getElementById('brand-logo-img');
 
-        // PERBAIKAN: Menyesuaikan rasio gambar logo asli agar tidak terpotong atau gepeng
+        // Kalkulasi rasio pas untuk logo di area max lebar 32mm & tinggi 16mm
         try {
             const dimensions = calculateAspectRatioFit(imgLogo.naturalWidth || 100, imgLogo.naturalHeight || 100, 32, 16);
-            const posX = (80 - dimensions.width) / 2;
+            const posX = (80 - dimensions.width) / 2; // Auto-center horizontal
             doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
         } catch (e) {
             console.log("Gambar logo gagal dimuat di PDF Ringkasan.");
@@ -898,10 +897,11 @@
         doc.setFontSize(7);
         doc.text("Sistem Rekap Real-time Cloud VAM", 40, 161, { align: "center" });
 
+        // Unduh PDF menggunakan handler universal mobile & desktop
         triggerPDFDownload(doc, `Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
     });
 
-    // Cetak invoice antrean per pelanggan
+    // PERBAIKAN: Fungsi cetak invoice satuan per konsumen dengan perbaikan total rasio logo & download di HP
     function generateInvoiceWithQR(item) {
         const qrContainer = document.getElementById('qrcode-hidden');
         qrContainer.innerHTML = '';
@@ -917,7 +917,6 @@
             correctLevel : QRCode.CorrectLevel.H
         });
 
-        // Diubah menjadi 350ms untuk memberikan waktu render QR-Code & pemicu interaksi click aman di browser HP
         setTimeout(() => {
             const qrImgElement = qrContainer.querySelector('img');
             if (!qrImgElement) return;
@@ -934,10 +933,10 @@
             const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
             const imgLogo = document.getElementById('brand-logo-img');
 
-            // PERBAIKAN: Kalkulasi rasio asli agar teks di pinggir kanan-kiri logo tidak terpotong di struk
+            // Menghitung rasio pas untuk struk belanja agar tidak memotong teks samping logo
             try {
                 const dimensions = calculateAspectRatioFit(imgLogo.naturalWidth || 100, imgLogo.naturalHeight || 100, 32, 16);
-                const posX = (80 - dimensions.width) / 2; 
+                const posX = (80 - dimensions.width) / 2; // Tengahkan logo secara horizontal
                 doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
             } catch (e) {
                 console.log("Logo VAM gagal dimuat di PDF Struk.");
@@ -978,9 +977,9 @@
             doc.setFontSize(7);
             doc.text("Scan QR untuk cek status antrean", 40, 131, { align: "center" });
 
-            // Menjalankan fungsi pemicu unduhan ramah perangkat mobile
+            // Unduh file invoice digital menggunakan handler universal aman mobile terverifikasi
             triggerPDFDownload(doc, `Invoice_VAM_${item.nomor}_${item.nama}.pdf`);
-        }, 350);
+        }, 200);
     }
 
     function kirimInvoiceWhatsApp(item) {
