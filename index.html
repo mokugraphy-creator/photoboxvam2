@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Rekap Antrean Photobox v2.0</title>
-    <!-- Library untuk PDF dan Excel -->
+    <title>Sistem Rekap Antrean Photobox v2.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --primary: #4f46e5;
@@ -19,6 +19,8 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --whatsapp: #25d366;
+            --whatsapp-hover: #20ba5a;
         }
 
         * {
@@ -193,7 +195,7 @@
             background-color: #dc2626;
             color: white;
             border: none;
-            display: none; /* Muncul hanya jika ada data terpilih */
+            display: none;
         }
         .btn-bulk-delete:hover { background-color: #b91c1c; }
 
@@ -249,7 +251,7 @@
         }
 
         .btn-row-action {
-            padding: 4px 8px;
+            padding: 4px 6px;
             font-size: 11px;
             font-weight: 600;
             border-radius: 4px;
@@ -264,6 +266,13 @@
             border-color: var(--primary);
         }
         .btn-pdf:hover { background: #eeebff; }
+
+        .btn-wa {
+            color: white;
+            background-color: var(--whatsapp);
+            border-color: var(--whatsapp);
+        }
+        .btn-wa:hover { background: var(--whatsapp-hover); }
 
         .btn-delete {
             color: var(--danger);
@@ -297,11 +306,20 @@
             font-size: 20px;
             font-weight: 700;
         }
+
+        /* Wadah Tersembunyi untuk QR Code Generator */
+        #qrcode-hidden {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            background: white;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div id="qrcode-hidden"></div> <div class="container">
     <header>
         <h1>Sistem Rekap Antrean Photobox</h1>
         <p>Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time</p>
@@ -327,395 +345,4 @@
                     <label>Pilihan Paket</label>
                     <div class="radio-group paket-group">
                         <label>
-                            <input type="radio" name="paket" value="FILE ONLY (Rp5.000)" data-harga="5000" data-tipe="file" class="btn-check" checked>
-                            <span class="btn-outline">FILE ONLY<br><small>Rp5.000</small></span>
-                        </label>
-                        <label>
-                            <input type="radio" name="paket" value="PAKET PREMIUM (Rp10.000)" data-harga="10000" data-tipe="cetak" class="btn-check">
-                            <span class="btn-outline">PREMIUM<br><small>Rp10.000</small></span>
-                        </label>
-                        <label>
-                            <input type="radio" name="paket" value="PAKET CETAK (Rp15.000)" data-harga="15000" data-tipe="cetak" class="btn-check">
-                            <span class="btn-outline">CETAK<br><small>Rp15.000</small></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="jumlahCetak">Jumlah Cetak (Lembar)</label>
-                    <input type="number" id="jumlahCetak" class="form-control" value="1" min="1">
-                </div>
-
-                <div class="form-group">
-                    <label>Metode Pembayaran</label>
-                    <div class="radio-group">
-                        <label>
-                            <input type="radio" name="pembayaran" value="Cash" class="btn-check" checked>
-                            <span class="btn-outline">Cash</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="pembayaran" value="QRIS" class="btn-check">
-                            <span class="btn-outline">QRIS</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Pilihan Frame</label>
-                    <div class="grid-select frame-grid">
-                        <label><input type="radio" name="frame" value="1" class="btn-check" checked><span class="btn-outline">1</span></label>
-                        <label><input type="radio" name="frame" value="2" class="btn-check"><span class="btn-outline">2</span></label>
-                        <label><input type="radio" name="frame" value="3" class="btn-check"><span class="btn-outline">3</span></label>
-                        <label><input type="radio" name="frame" value="4" class="btn-check"><span class="btn-outline">4</span></label>
-                        <label><input type="radio" name="frame" value="5" class="btn-check"><span class="btn-outline">5</span></label>
-                        <label><input type="radio" name="frame" value="6" class="btn-check"><span class="btn-outline">6</span></label>
-                        <label><input type="radio" name="frame" value="7" class="btn-check"><span class="btn-outline">7</span></label>
-                        <label><input type="radio" name="frame" value="8" class="btn-check"><span class="btn-outline">8</span></label>
-                        <label><input type="radio" name="frame" value="9" class="btn-check"><span class="btn-outline">9</span></label>
-                        <label><input type="radio" name="frame" value="10" class="btn-check"><span class="btn-outline">10</span></label>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-submit">Tambahkan ke Antrean</button>
-            </form>
-        </div>
-
-        <div class="card" style="overflow: hidden;">
-            <div class="card-title">Daftar Tunggu & Rekap Antrean</div>
-            
-            <div class="table-action-bar">
-                <div>
-                    <button class="btn-action btn-excel" id="btnExportExcel">Export ke Excel/Spreadsheet</button>
-                </div>
-                <div>
-                    <button class="btn-action btn-bulk-delete" id="btnBulkDelete">Hapus Terpilih (0)</button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <table id="tabelAntrean">
-                    <thead>
-                        <tr>
-                            <th width="30"><input type="checkbox" id="selectAll"></th>
-                            <th>No</th>
-                            <th>Nama</th>
-                            <th>Paket</th>
-                            <th>Frame</th>
-                            <th>Cetak</th>
-                            <th>Total Harga</th>
-                            <th>Bayar</th>
-                            <th>Status Antrean</th>
-                            <th>Status Cetak</th>
-                            <th>Status Ambil</th>
-                            <th width="140">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="listAntrean"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= SCRIPT FIREBASE REALTIME DATABASE ================= -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    // Konfigurasi resmi proyek vam-photobox milikmu
-    const firebaseConfig = {
-        apiKey: "AIzaSyC8heazG3K7LN5bsOjHKnRqvbhtEU8P3IE",
-        authDomain: "vam-photobox.firebaseapp.com",
-        databaseURL: "https://vam-photobox-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "vam-photobox",
-        storageBucket: "vam-photobox.firebasestorage.app",
-        messagingSenderId: "1012512296328",
-        appId: "1:1012512296328:web:f1d2b53f9d83e8ef9afe3d",
-        measurementId: "G-802TPJTYR9"
-    };
-
-    // Inisialisasi Firebase & Referensi Database
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const dbRef = ref(database, 'antrean_photobox');
-
-    let totalAntreanGlobal = 0;
-    let currentAntreanList = []; // Menyimpan data lokal untuk export excel
-
-    // 1. INPUT ANTREAN BARU & KIRIM KE FIREBASE
-    document.getElementById('antreanForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const nama = document.getElementById('nama').value;
-        const paketRadio = document.querySelector('input[name="paket"]:checked');
-        const paketNama = paketRadio.value;
-        const hargaDasar = parseInt(paketRadio.getAttribute('data-harga'));
-        const tipePaket = paketRadio.getAttribute('data-tipe');
-        
-        const jumlahCetak = parseInt(document.getElementById('jumlahCetak').value);
-        const pembayaran = document.querySelector('input[name="pembayaran"]:checked').value;
-        const frame = document.querySelector('input[name="frame"]:checked').value;
-
-        // HITUNG TOTAL HARGA: Jika tipe cetak, harga dikali lembar cetak. Jika file only, tetap harga dasar.
-        let totalHarga = hargaDasar;
-        if (tipePaket === "cetak") {
-            totalHarga = hargaDasar * jumlahCetak;
-        }
-
-        const nomorBaru = totalAntreanGlobal + 1;
-
-        const dataBaru = {
-            nomor: nomorBaru,
-            nama: nama,
-            paket: paketNama,
-            jumlahCetak: jumlahCetak,
-            totalHarga: totalHarga,
-            pembayaran: pembayaran,
-            frame: frame,
-            statusAntrean: 'Menunggu',
-            statusCetak: paketNama.includes("FILE ONLY") ? 'Tidak Cetak' : 'Belum Cetak',
-            statusAmbil: 'Belum Diambil',
-            timestamp: Date.now()
-        };
-
-        push(dbRef, dataBaru);
-
-        // Reset Input form setelah sukses kirim
-        document.getElementById('nama').value = '';
-        document.getElementById('jumlahCetak').value = '1';
-    });
-
-    // 2. AMBIL DATA REAL-TIME & SINKRONKAN KE SEMUA PERANGKAT
-    onValue(dbRef, (snapshot) => {
-        const tbody = document.getElementById('listAntrean');
-        tbody.innerHTML = '';
-        document.getElementById('selectAll').checked = false;
-        toggleBulkDeleteButton();
-        
-        const data = snapshot.val();
-
-        if (!data) {
-            totalAntreanGlobal = 0;
-            currentAntreanList = [];
-            updateStats([]);
-            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding: 30px;">Belum ada antrean hari ini.</td></tr>`;
-            return;
-        }
-
-        // Ubah objek Firebase menjadi array dan urutkan berdasarkan waktu input
-        const antreanList = [];
-        for (let firebaseId in data) {
-            antreanList.push({ firebaseId, ...data[firebaseId] });
-        }
-        antreanList.sort((a, b) => a.timestamp - b.timestamp);
-
-        totalAntreanGlobal = antreanList.length;
-        currentAntreanList = antreanList;
-        updateStats(antreanList);
-
-        // Render baris tabel secara real-time ke layar browser
-        antreanList.forEach(item => {
-            const tr = document.createElement('tr');
-            
-            let badgeAntrean = `<span class="badge ${item.statusAntrean === 'Menunggu' ? 'badge-waiting' : 'badge-success'}">${item.statusAntrean}</span>`;
-            let badgeCetak = item.statusCetak === 'Tidak Cetak' ? `<span class="badge badge-info">Tidak Cetak</span>` : `<span class="badge ${item.statusCetak === 'Belum Cetak' ? 'badge-warning' : 'badge-success'}">${item.statusCetak}</span>`;
-            let badgeAmbil = `<span class="badge ${item.statusAmbil === 'Belum Diambil' ? 'badge-waiting' : 'badge-success'}">${item.statusAmbil}</span>`;
-            
-            // Format Rupiah untuk tampilan harga
-            let displayHarga = item.totalHarga ? 'Rp ' + item.totalHarga.toLocaleString('id-ID') : 'Rp ' + (5000).toLocaleString('id-ID');
-
-            tr.innerHTML = `
-                <td><input type="checkbox" class="row-checkbox" data-id="${item.firebaseId}"></td>
-                <td><strong>#${item.nomor}</strong></td>
-                <td><strong>${item.nama}</strong></td>
-                <td><small>${item.paket}</small></td>
-                <td style="text-align:center;"><span style="background:#f1f5f9; padding:4px 8px; border-radius:4px; font-weight:bold;">${item.frame}</span></td>
-                <td>${item.jumlahCetak} lbr</td>
-                <td><strong>${displayHarga}</strong></td>
-                <td><span class="badge" style="background:#e2e8f0; color:#475569">${item.pembayaran}</span></td>
-                <td>
-                    ${badgeAntrean}<br>
-                    <select class="action-select" style="margin-top:5px" data-id="${item.firebaseId}" data-field="statusAntrean">
-                        <option value="Menunggu" ${item.statusAntrean === 'Menunggu' ? 'selected' : ''}>Menunggu</option>
-                        <option value="Selesai Foto" ${item.statusAntrean === 'Selesai Foto' ? 'selected' : ''}>Selesai Foto</option>
-                    </select>
-                </td>
-                <td>
-                    ${badgeCetak}<br>
-                    ${(!item.paket.includes("FILE ONLY")) ? `
-                    <select class="action-select" style="margin-top:5px" data-id="${item.firebaseId}" data-field="statusCetak">
-                        <option value="Belum Cetak" ${item.statusCetak === 'Belum Cetak' ? 'selected' : ''}>Belum Cetak</option>
-                        <option value="Selesai Cetak" ${item.statusCetak === 'Selesai Cetak' ? 'selected' : ''}>Selesai Cetak</option>
-                    </select>` : ''}
-                </td>
-                <td>
-                    ${badgeAmbil}<br>
-                    <select class="action-select" style="margin-top:5px" data-id="${item.firebaseId}" data-field="statusAmbil">
-                        <option value="Belum Diambil" ${item.statusAmbil === 'Belum Diambil' ? 'selected' : ''}>Belum Diambil</option>
-                        <option value="Sudah Diambil" ${item.statusAmbil === 'Sudah Diambil' ? 'selected' : ''}>Sudah Diambil</option>
-                    </select>
-                </td>
-                <td>
-                    <button class="btn-row-action btn-pdf" data-id="${item.firebaseId}">PDF</button>
-                    <button class="btn-row-action btn-delete" data-id="${item.firebaseId}">Hapus</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        // Event listener update drop-down status secara langsung ke cloud
-        document.querySelectorAll('.action-select').forEach(select => {
-            select.addEventListener('change', function() {
-                const fId = this.getAttribute('data-id');
-                const field = this.getAttribute('data-field');
-                const val = this.value;
-                
-                const itemRef = ref(database, 'antrean_photobox/' + fId);
-                update(itemRef, { [field]: val });
-            });
-        });
-
-        // Event listener tombol hapus data satuan
-        document.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const fId = this.getAttribute('data-id');
-                if (confirm("Hapus data antrean ini dari cloud & semua perangkat?")) {
-                    const itemRef = ref(database, 'antrean_photobox/' + fId);
-                    remove(itemRef);
-                }
-            });
-        });
-
-        // Event listener tombol Cetak PDF Invoice
-        document.querySelectorAll('.btn-pdf').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const fId = this.getAttribute('data-id');
-                const item = currentAntreanList.find(i => i.firebaseId === fId);
-                if (item) cetakInvoicePDF(item);
-            });
-        });
-
-        // Event listener untuk checkbox baris tabel
-        document.querySelectorAll('.row-checkbox').forEach(cb => {
-            cb.addEventListener('change', toggleBulkDeleteButton);
-        });
-    });
-
-    // 3. FUNGSI SELECT ALL & HAPUS MASAL (BULK DELETE)
-    document.getElementById('selectAll').addEventListener('change', function() {
-        const checkedStatus = this.checked;
-        document.querySelectorAll('.row-checkbox').forEach(cb => {
-            cb.checked = checkedStatus;
-        });
-        toggleBulkDeleteButton();
-    });
-
-    function toggleBulkDeleteButton() {
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        const btnBulk = document.getElementById('btnBulkDelete');
-        if (checkedBoxes.length > 0) {
-            btnBulk.style.display = 'inline-block';
-            btnBulk.innerText = `Hapus Terpilih (${checkedBoxes.length})`;
-        } else {
-            btnBulk.style.display = 'none';
-        }
-    }
-
-    document.getElementById('btnBulkDelete').addEventListener('click', function() {
-        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        if (confirm(`Apakah Anda yakin ingin menghapus ${checkedBoxes.length} data antrean sekaligus dari semua perangkat?`)) {
-            checkedBoxes.forEach(cb => {
-                const fId = cb.getAttribute('data-id');
-                const itemRef = ref(database, 'antrean_photobox/' + fId);
-                remove(itemRef);
-            });
-        }
-    });
-
-    // 4. FUNGSI EXPORT REKAPAN KE EXCEL
-    document.getElementById('btnExportExcel').addEventListener('click', function() {
-        if (currentAntreanList.length === 0) {
-            alert("Belum ada data antrean yang bisa diexport.");
-            return;
-        }
-
-        // Menyusun struktur kolom excel yang rapi
-        const dataExcel = currentAntreanList.map((item, index) => ({
-            "No Antrean": `#${item.nomor}`,
-            "Nama Pelanggan": item.nama,
-            "Pilihan Paket": item.paket,
-            "Pilihan Frame": item.frame,
-            "Jumlah Cetak (Lembar)": item.jumlahCetak,
-            "Total Harga": item.totalHarga || 5000,
-            "Metode Pembayaran": item.pembayaran,
-            "Status Antrean": item.statusAntrean,
-            "Status Cetak": item.statusCetak,
-            "Status Ambil": item.statusAmbil,
-            "Waktu Transaksi": new Date(item.timestamp).toLocaleString('id-ID')
-        }));
-
-        const worksheet = XLSX.utils.json_to_sheet(dataExcel);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Antrean");
-        
-        // Simpan file excel ke penyimpanan lokal komputer
-        XLSX.writeFile(workbook, `Rekap_Antrean_Photobox_${new Date().toISOString().slice(0,10)}.xlsx`);
-    });
-
-    // 5. FUNGSI GENERATE INVOICE PDF PER ANTREAN
-    function cetakInvoicePDF(item) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [80, 100] // Ukuran mini kasir/struk termal (80mm x 100mm)
-        });
-
-        const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
-
-        // Struktur Desain Nota Cetak Struk Kasir
-        doc.setFont("courier", "bold");
-        doc.setFontSize(12);
-        doc.text("VAM PHOTOBOX", 40, 10, { align: "center" });
-        doc.setFont("courier", "normal");
-        doc.setFontSize(8);
-        doc.text("---------------------------------", 40, 14, { align: "center" });
-        
-        doc.text(`No. Antrean: #${item.nomor}`, 5, 20);
-        doc.text(`Tanggal    : ${new Date(item.timestamp).toLocaleDateString('id-ID')}`, 5, 24);
-        doc.text(`Nama       : ${item.nama.toUpperCase()}`, 5, 28);
-        doc.text("---------------------------------", 40, 34, { align: "center" });
-
-        doc.setFont("courier", "bold");
-        doc.text("Rincian Pesanan:", 5, 40);
-        doc.setFont("courier", "normal");
-        doc.text(`${item.paket}`, 5, 46);
-        doc.text(`Frame Pilihan : ${item.frame}`, 5, 51);
-        doc.text(`Jumlah Cetak  : ${item.jumlahCetak} Lembar`, 5, 56);
-        doc.text(`Metode Bayar  : ${item.pembayaran}`, 5, 61);
-        
-        doc.text("---------------------------------", 40, 68, { align: "center" });
-        doc.setFont("courier", "bold");
-        doc.setFontSize(10);
-        doc.text(`TOTAL BAYAR: Rp ${hargaTotal}`, 5, 75);
-        
-        doc.setFont("courier", "normal");
-        doc.setFontSize(8);
-        doc.text("---------------------------------", 40, 82, { align: "center" });
-        doc.setFont("courier", "italic");
-        doc.text("Terima kasih atas kunjungan Anda", 40, 88, { align: "center" });
-
-        // Download otomatis file PDF ke perangkat kasir
-        doc.save(`Invoice_VAM_${item.nomor}_${item.nama}.pdf`);
-    }
-
-    // FUNGSI UPDATE REKAPAN STATISTIK SECARA ONLINE
-    function updateStats(list) {
-        document.getElementById('stat-total').innerText = list.length;
-        document.getElementById('stat-menunggu').innerText = list.filter(i => i.statusAntrean === 'Menunggu').length;
-        document.getElementById('stat-belum-cetak').innerText = list.filter(i => i.statusCetak === 'Belum Cetak').length;
-        document.getElementById('stat-belum-ambil').innerText = list.filter(i => i.statusAmbil === 'Belum Diambil' && !i.paket.includes("FILE ONLY")).length;
-    }
-</script>
-</body>
-</html>
+                            <input type="radio" name="paket" value="FILE ONLY (Rp5.000)" data-harga="5000" data-ti
