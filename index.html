@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Rekap Antrean Photobox v2.9</title>
+    <title>Sistem Rekap Antrean Photobox v3.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -78,7 +78,6 @@
             padding: 0 10px;
         }
 
-        /* Toggle Mode Admin / Pengunjung */
         .mode-toggle-container {
             margin-bottom: 20px;
             text-align: right;
@@ -126,7 +125,6 @@
             font-weight: 700;
         }
 
-        /* Live Queue Info Area */
         .visitor-queue-info {
             display: none;
             background: #eddffc;
@@ -139,7 +137,6 @@
             color: #3b0764;
         }
 
-        /* Live Price Preview Box */
         .price-preview-box {
             background: #f0fdf4;
             border: 1px dashed #4ade80;
@@ -159,7 +156,6 @@
             gap: 20px;
         }
 
-        /* Modifikasi Layout khusus Mode Pengunjung */
         body.visitor-mode .admin-only {
             display: none !important;
         }
@@ -280,7 +276,6 @@
             background: var(--primary-hover);
         }
 
-        /* Filter Section Style */
         .filter-section {
             background: #f1f5f9;
             padding: 12px;
@@ -451,7 +446,6 @@
             padding: 10px;
         }
 
-        /* Notifikasi sukses pengunjung */
         .visitor-toast {
             display: none;
             position: fixed;
@@ -469,58 +463,21 @@
         }
 
         @media (min-width: 768px) {
-            body {
-                padding: 30px 20px;
-            }
-            header h1 {
-                font-size: 28px;
-            }
-            header p {
-                font-size: 14px;
-            }
-            .stats-bar {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-            }
-            .stat-card p {
-                font-size: 20px;
-            }
-            .main-layout {
-                display: grid;
-                grid-template-columns: 380px 1fr;
-                gap: 25px;
-            }
-            body.visitor-mode .main-layout {
-                display: flex;
-            }
-            .card {
-                padding: 25px;
-            }
-            .card-title {
-                font-size: 18px;
-            }
-            .filter-section {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .table-action-bar {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .action-left-buttons {
-                flex-direction: row;
-            }
-            .btn-action {
-                width: auto;
-            }
-            .btn-bulk-delete {
-                width: auto;
-            }
-            .btn-outline {
-                font-size: 12px;
-            }
+            body { padding: 30px 20px; }
+            header h1 { font-size: 28px; }
+            header p { font-size: 14px; }
+            .stats-bar { grid-template-columns: repeat(4, 1fr); gap: 15px; }
+            .stat-card p { font-size: 20px; }
+            .main-layout { grid-template-columns: 380px 1fr; gap: 25px; }
+            body.visitor-mode .main-layout { display: flex; }
+            .card { padding: 25px; }
+            .card-title { font-size: 18px; }
+            .filter-section { flex-direction: row; justify-content: space-between; align-items: center; }
+            .table-action-bar { flex-direction: row; justify-content: space-between; align-items: center; }
+            .action-left-buttons { flex-direction: row; }
+            .btn-action { width: auto; }
+            .btn-bulk-delete { width: auto; }
+            .btn-outline { font-size: 12px; }
         }
     </style>
 </head>
@@ -636,9 +593,7 @@
                         <option value="bulanan">Rekap Bulanan</option>
                         <option value="tahunan">Rekap Tahunan</option>
                     </select>
-
                     <input type="date" id="filterTanggal" class="filter-control" style="display: none;">
-
                     <select id="filterBulan" class="filter-control" style="display: none;">
                         <option value="0">Januari</option>
                         <option value="1">Februari</option>
@@ -653,7 +608,6 @@
                         <option value="10">November</option>
                         <option value="11">Desember</option>
                     </select>
-
                     <select id="filterTahun" class="filter-control" style="display: none;"></select>
                 </div>
             </div>
@@ -716,11 +670,8 @@
     let currentAntreanList = []; 
     let filteredAntreanList = []; 
     let isVisitorMode = false;
-    
-    // PIN Proteksi Kunci Admin Modul
     const ADMIN_PIN = "1234";
 
-    // Generate Opsi Tahun Secara Otomatis di Filter
     const filterTahunSelect = document.getElementById('filterTahun');
     const tahunSekarang = new Date().getFullYear();
     for (let t = 2025; t <= tahunSekarang; t++) {
@@ -731,21 +682,17 @@
         filterTahunSelect.appendChild(opt);
     }
 
-    // Set Default Input & Filter Bulan Berjalan
     document.getElementById('filterBulan').value = new Date().getMonth();
     document.getElementById('filterTanggal').value = new Date().toISOString().slice(0, 10);
 
-    // Fungsi Pengatur Switch Dashboard Pengunjung dengan Fitur Enskripsi PIN Admin
     document.getElementById('btnModeToggle').addEventListener('click', function() {
         if(isVisitorMode) {
-            // Validasi PIN ketika mencoba pindah ke Mode Admin Dashboard
             const inputPin = prompt("Masukkan PIN Keamanan Admin untuk masuk:");
             if (inputPin === null) return; 
             if (inputPin !== ADMIN_PIN) {
                 alert("❌ PIN Salah! Akses Menuju Dashboard Admin Ditolak.");
                 return;
             }
-            
             isVisitorMode = false;
             document.body.classList.remove('visitor-mode');
             this.innerText = "Switch ke Mode Pengunjung (Self-Service)";
@@ -755,7 +702,6 @@
             document.getElementById('form-card-title').innerText = "Input Antrean Baru";
             document.getElementById('btn-submit-text').innerText = "Tambahkan ke Antrean";
         } else {
-            // Pengunjung bebas beralih ke Mode Registrasi Mandiri tanpa PIN
             isVisitorMode = true;
             document.body.classList.add('visitor-mode');
             this.innerText = "Switch ke Dashboard Admin";
@@ -768,43 +714,30 @@
         }
     });
 
-    // Fungsi Hitung Otomatis (Live Price) Real-time Preview Form
     function updateLiveHarga() {
         const paketRadio = document.querySelector('input[name="paket"]:checked');
         if(!paketRadio) return;
-        
         const hargaDasar = parseInt(paketRadio.getAttribute('data-harga'));
         const tipePaket = paketRadio.getAttribute('data-tipe');
         const jumlahCetak = parseInt(document.getElementById('jumlahCetak').value) || 1;
-
         let total = hargaDasar;
-        if (tipePaket === "cetak") {
-            total = hargaDasar * jumlahCetak;
-        }
+        if (tipePaket === "cetak") { total = hargaDasar * jumlahCetak; }
         document.getElementById('liveTotalHarga').innerText = 'Rp ' + total.toLocaleString('id-ID');
     }
 
-    // Event Trigger Hitung Ulang Live Price Form
     document.querySelectorAll('input[name="paket"]').forEach(radio => {
         radio.addEventListener('change', updateLiveHarga);
     });
     document.getElementById('jumlahCetak').addEventListener('input', updateLiveHarga);
 
-    // Fungsi Live Tracking Urutan Nomor Antrean Berjalan di Sisi Pengunjung
     function updateLiveQueueTracker(listAllData) {
-        // Cari antrean paling awal/kecil yang hari ini berstatus masih "Menunggu"
         const antreanMenungguHariIni = listAllData.filter(i => i.statusAntrean === 'Menunggu');
-        
         if (antreanMenungguHariIni.length === 0) {
             document.getElementById('liveQueueTracker').innerHTML = `🎉 <strong>Semua antrean telah dilayani!</strong> Tidak ada antrean menunggu saat ini.`;
         } else {
-            const antreanSekarang = antreanMenungguHariIni[0]; // Ambil antrean paling pertama dalam baris tunggu
+            const antreanSekarang = antreanMenungguHariIni[0];
             const totalSisaDiDepan = antreanMenungguHariIni.length - 1;
-            
-            document.getElementById('liveQueueTracker').innerHTML = `
-                📸 Saat ini sedang melayani nomor antrean: <strong style="font-size:16px; color:#1e1b4b;">#${antreanSekarang.nomor}</strong> (${antreanSekarang.nama.toUpperCase()}) 
-                | ⏳ Sisa antrean di dalam daftar tunggu: <strong>${totalSisaDiDepan} antrean lagi</strong>
-            `;
+            document.getElementById('liveQueueTracker').innerHTML = `📸 Saat ini sedang melayani nomor antrean: <strong style="font-size:16px; color:#1e1b4b;">#${antreanSekarang.nomor}</strong> (${antreanSekarang.nama.toUpperCase()}) | ⏳ Sisa antrean di dalam daftar tunggu: <strong>${totalSisaDiDepan} antrean lagi</strong>`;
         }
     }
 
@@ -821,35 +754,24 @@
                 const newWindow = window.open();
                 if (newWindow) {
                     newWindow.document.write(`<iframe src="${pdfDataUri}" style="width:100%; height:100%; border:none;"></iframe>`);
-                } else {
-                    doc.save(filename);
-                }
-            } catch (e) {
-                doc.save(filename);
-            }
-        } else {
-            doc.save(filename);
-        }
+                } else { doc.save(filename); }
+            } catch (e) { doc.save(filename); }
+        } else { doc.save(filename); }
     }
 
     document.getElementById('antreanForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
         const nama = document.getElementById('nama').value;
         const paketRadio = document.querySelector('input[name="paket"]:checked');
         const paketNama = paketRadio.value;
         const hargaDasar = parseInt(paketRadio.getAttribute('data-harga'));
         const tipePaket = paketRadio.getAttribute('data-tipe');
-        
         const jumlahCetak = parseInt(document.getElementById('jumlahCetak').value);
         const pembayaran = document.querySelector('input[name="pembayaran"]:checked').value;
         const frame = document.querySelector('input[name="frame"]:checked').value;
 
         let totalHarga = hargaDasar;
-        if (tipePaket === "cetak") {
-            totalHarga = hargaDasar * jumlahCetak;
-        }
-
+        if (tipePaket === "cetak") { totalHarga = hargaDasar * jumlahCetak; }
         const nomorBaru = totalAntreanGlobal + 1;
 
         const dataBaru = {
@@ -867,16 +789,11 @@
         };
 
         push(dbRef, dataBaru);
-
-        // Reset form input
         document.getElementById('nama').value = '';
         document.getElementById('jumlahCetak').value = '1';
-        
-        // Kembalikan Default File Only Pilihan Terpilih
         document.querySelector('input[name="paket"][value="FILE ONLY (Rp5.000)"]').checked = true;
         updateLiveHarga();
 
-        // Tampilkan feedback pop up jika sedang diisi oleh pengunjung mandiri
         if(isVisitorMode) {
             const toast = document.getElementById('visitorToast');
             toast.innerText = `✨ Sukses! Kak ${nama.toUpperCase()}, Nomor Antrean Anda: #${nomorBaru}. Silakan konfirmasi ke kasir. ✨`;
@@ -885,7 +802,6 @@
         }
     });
 
-    // Proses filter pencarian data (Semua, Tanggal, Bulanan, Tahunan)
     function prosesFilterData() {
         const mode = document.getElementById('filterMode').value;
         const targetTanggal = document.getElementById('filterTanggal').value; 
@@ -897,10 +813,8 @@
         } else {
             filteredAntreanList = currentAntreanList.filter(item => {
                 const date = new Date(item.timestamp);
-                
                 if (mode === 'harian') {
-                    const itemDateStr = date.toISOString().slice(0, 10);
-                    return itemDateStr === targetTanggal;
+                    return date.toISOString().slice(0, 10) === targetTanggal;
                 } else if (mode === 'bulanan') {
                     return date.getFullYear() === targetTahun && date.getMonth() === targetBulan;
                 } else if (mode === 'tahunan') {
@@ -912,7 +826,6 @@
         renderTable(filteredAntreanList);
     }
 
-    // Event Listener Filter UI
     document.getElementById('filterMode').addEventListener('change', function() {
         const mode = this.value;
         document.getElementById('filterTanggal').style.display = (mode === 'harian') ? 'inline-block' : 'none';
@@ -926,27 +839,17 @@
 
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
-
         if (!data) {
-            totalAntreanGlobal = 0;
-            currentAntreanList = [];
-            filteredAntreanList = [];
-            updateStats([]);
-            updateLiveQueueTracker([]);
+            totalAntreanGlobal = 0; currentAntreanList = []; filteredAntreanList = [];
+            updateStats([]); updateLiveQueueTracker([]);
             document.getElementById('listAntrean').innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding: 30px;">Belum ada data antrean di cloud database.</td></tr>`;
             return;
         }
-
         const antreanList = [];
-        for (let firebaseId in data) {
-            antreanList.push({ firebaseId, ...data[firebaseId] });
-        }
+        for (let firebaseId in data) { antreanList.push({ firebaseId, ...data[firebaseId] }); }
         antreanList.sort((a, b) => a.timestamp - b.timestamp);
-
         totalAntreanGlobal = antreanList.length;
         currentAntreanList = antreanList;
-        
-        // Pemicu Live Tracker Sisi Pengunjung
         updateLiveQueueTracker(antreanList);
         prosesFilterData();
     });
@@ -965,11 +868,9 @@
 
         listData.forEach(item => {
             const tr = document.createElement('tr');
-            
             let badgeAntrean = `<span class="badge ${item.statusAntrean === 'Menunggu' ? 'badge-waiting' : 'badge-success'}">${item.statusAntrean}</span>`;
             let badgeCetak = item.statusCetak === 'Tidak Cetak' ? `<span class="badge badge-info">Tidak Cetak</span>` : `<span class="badge ${item.statusCetak === 'Belum Cetak' ? 'badge-warning' : 'badge-success'}">${item.statusCetak}</span>`;
             let badgeAmbil = `<span class="badge ${item.statusAmbil === 'Belum Diambil' ? 'badge-waiting' : 'badge-success'}">${item.statusAmbil}</span>`;
-            
             let displayHarga = item.totalHarga ? 'Rp ' + item.totalHarga.toLocaleString('id-ID') : 'Rp ' + (5000).toLocaleString('id-ID');
 
             tr.innerHTML = `
@@ -1012,14 +913,12 @@
             tbody.appendChild(tr);
         });
 
-        // Event Listener Elemen Dinamis Tabel
         document.querySelectorAll('.action-select').forEach(select => {
             select.addEventListener('change', function() {
                 const fId = this.getAttribute('data-id');
                 const field = this.getAttribute('data-field');
                 const val = this.value;
-                const itemRef = ref(database, 'antrean_photobox/' + fId);
-                update(itemRef, { [field]: val });
+                update(ref(database, 'antrean_photobox/' + fId), { [field]: val });
             });
         });
 
@@ -1027,8 +926,7 @@
             btn.addEventListener('click', function() {
                 const fId = this.getAttribute('data-id');
                 if (confirm("Hapus data antrean ini dari cloud & semua perangkat?")) {
-                    const itemRef = ref(database, 'antrean_photobox/' + fId);
-                    remove(itemRef);
+                    remove(ref(database, 'antrean_photobox/' + fId));
                 }
             });
         });
@@ -1056,9 +954,7 @@
 
     document.getElementById('selectAll').addEventListener('change', function() {
         const checkedStatus = this.checked;
-        document.querySelectorAll('.row-checkbox').forEach(cb => {
-            cb.checked = checkedStatus;
-        });
+        document.querySelectorAll('.row-checkbox').forEach(cb => { cb.checked = checkedStatus; });
         toggleBulkDeleteButton();
     });
 
@@ -1068,42 +964,29 @@
         if (checkedBoxes.length > 0) {
             btnBulk.style.display = 'inline-block';
             btnBulk.innerText = `Hapus Terpilih (${checkedBoxes.length})`;
-        } else {
-            btnBulk.style.display = 'none';
-        }
+        } else { btnBulk.style.display = 'none'; }
     }
 
     document.getElementById('btnBulkDelete').addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
         if (confirm(`Apakah Anda yakin ingin menghapus ${checkedBoxes.length} data antrean sekaligus?`)) {
             checkedBoxes.forEach(cb => {
-                const fId = cb.getAttribute('data-id');
-                const itemRef = ref(database, 'antrean_photobox/' + fId);
-                remove(itemRef);
+                remove(ref(database, 'antrean_photobox/' + cb.getAttribute('data-id')));
             });
         }
     });
 
-    // EKSPOR KE EXCEL
     document.getElementById('btnExportExcel').addEventListener('click', function() {
-        if (filteredAntreanList.length === 0) {
-            alert("Tidak ada data antrean pada jangkauan filter saat ini.");
-            return;
-        }
-
+        if (filteredAntreanList.length === 0) { alert("Tidak ada data antrean pada jangkauan filter saat ini."); return; }
         const mode = document.getElementById('filterMode').value;
         const tanggalValue = document.getElementById('filterTanggal').value;
         const bulanLabel = document.getElementById('filterBulan').options[document.getElementById('filterBulan').selectedIndex].text;
         const tahunLabel = document.getElementById('filterTahun').value;
 
         let namaFile = "Rekap_Antrean_Photobox_Semua";
-        if (mode === "harian") {
-            namaFile = `Rekap_Harian_${tanggalValue}`;
-        } else if (mode === "bulanan") {
-            namaFile = `Rekap_Bulanan_${bulanLabel}_${tahunLabel}`;
-        } else if (mode === "tahunan") {
-            namaFile = `Rekap_Tahunan_${tahunLabel}`;
-        }
+        if (mode === "harian") { namaFile = `Rekap_Harian_${tanggalValue}`; } 
+        else if (mode === "bulanan") { namaFile = `Rekap_Bulanan_${bulanLabel}_${tahunLabel}`; } 
+        else if (mode === "tahunan") { namaFile = `Rekap_Tahunan_${tahunLabel}`; }
 
         const dataExcel = filteredAntreanList.map((item) => ({
             "No Antrean": `#${item.nomor}`,
@@ -1125,84 +1008,50 @@
         XLSX.writeFile(workbook, `${namaFile}_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // LAPORAN PENDAPATAN PDF 
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
-        if (filteredAntreanList.length === 0) {
-            alert("Tidak ada data antrean pada periode filter ini.");
-            return;
-        }
-
+        if (filteredAntreanList.length === 0) { alert("Tidak ada data antrean pada periode filter ini."); return; }
         const mode = document.getElementById('filterMode').value;
         const tanggalValue = document.getElementById('filterTanggal').value;
         const bulanLabel = document.getElementById('filterBulan').options[document.getElementById('filterBulan').selectedIndex].text;
         const tahunLabel = document.getElementById('filterTahun').value;
 
         let periodeJudul = "SEMUA PERIODE DATA";
-        if (mode === "harian") {
-            periodeJudul = `TANGGAL: ${tanggalValue}`;
-        } else if (mode === "bulanan") {
-            periodeJudul = `BULAN: ${bulanLabel.toUpperCase()} ${tahunLabel}`;
-        } else if (mode === "tahunan") {
-            periodeJudul = `TAHUN REKAP: ${tahunLabel}`;
-        }
+        if (mode === "harian") { periodeJudul = `TANGGAL: ${tanggalValue}`; } 
+        else if (mode === "bulanan") { periodeJudul = `BULAN: ${bulanLabel.toUpperCase()} ${tahunLabel}`; } 
+        else if (mode === "tahunan") { periodeJudul = `TAHUN REKAP: ${tahunLabel}`; }
 
-        let totalPendapatan = 0;
-        let totalLembarCetak = 0;
-        let hitungCash = 0;
-        let hitungQris = 0;
-        let antreanSelesaiFoto = 0;
-        let antreanMenunggu = 0;
-        let produksiSelesaiCetak = 0;
-        let produksiBelumCetak = 0;
-        let produksiTidakCetak = 0;
+        let totalPendapatan = 0, totalLembarCetak = 0, hitungCash = 0, hitungQris = 0, antreanSelesaiFoto = 0, antreanMenunggu = 0, produksiSelesaiCetak = 0, produksiBelumCetak = 0, produksiTidakCetak = 0;
 
         filteredAntreanList.forEach(item => {
             const nominal = item.totalHarga ? parseInt(item.totalHarga) : 5000;
             totalPendapatan += nominal;
             totalLembarCetak += item.jumlahCetak ? parseInt(item.jumlahCetak) : 0;
-
             if (item.pembayaran === "Cash") hitungCash += nominal;
             if (item.pembayaran === "QRIS") hitungQris += nominal;
-
             if (item.statusAntrean === "Selesai Foto") antreanSelesaiFoto++;
             if (item.statusAntrean === "Menunggu") antreanMenunggu++;
-
             if (item.statusCetak === "Selesai Cetak") produksiSelesaiCetak++;
             if (item.statusCetak === "Belum Cetak") produksiBelumCetak++;
             if (item.statusCetak === "Tidak Cetak") produksiTidakCetak++;
         });
 
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: [80, 175]
-        });
-
-        const imgLogo = document.getElementById('brand-logo-img');
-
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 175] });
         try {
+            const imgLogo = document.getElementById('brand-logo-img');
             const dimensions = calculateAspectRatioFit(imgLogo.naturalWidth || 100, imgLogo.naturalHeight || 100, 32, 16);
-            const posX = (80 - dimensions.width) / 2;
-            doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
-        } catch (e) {
-            console.log("Logo image error.");
-        }
+            doc.addImage(imgLogo, 'JPEG', (80 - dimensions.width) / 2, 5, dimensions.width, dimensions.height);
+        } catch (e) {}
 
-        doc.setFont("courier", "bold");
-        doc.setFontSize(10);
+        doc.setFont("courier", "bold"); doc.setFontSize(10);
         doc.text("LAPORAN RINGKASAN PENDAPATAN", 40, 27, { align: "center" });
         doc.text("VAM PHOTOBOX", 40, 31, { align: "center" });
-        
-        doc.setFontSize(8);
-        doc.text(periodeJudul, 40, 36, { align: "center" });
-        
+        doc.setFontSize(8); doc.text(periodeJudul, 40, 36, { align: "center" });
         doc.setFont("courier", "normal");
         doc.text(`Waktu Cetak: ${new Date().toLocaleString('id-ID')}`, 5, 43);
         doc.text("---------------------------------", 40, 47, { align: "center" });
 
-        doc.setFont("courier", "bold");
-        doc.text("STATISTIK PRODUKSI ANTRIAN:", 5, 53);
+        doc.setFont("courier", "bold"); doc.text("STATISTIK PRODUKSI ANTRIAN:", 5, 53);
         doc.setFont("courier", "normal");
         doc.text(`Total Antrean Masuk : ${filteredAntreanList.length} Transaksi`, 5, 58);
         doc.text(`Status Menunggu     : ${antreanMenunggu} Orang`, 5, 63);
@@ -1211,29 +1060,20 @@
         doc.text(`Status Selesai Cetak: ${produksiSelesaiCetak} Pesanan`, 5, 78);
         doc.text(`Paket Tanpa Cetak   : ${produksiTidakCetak} File Only`, 5, 83);
         doc.text(`Akumulasi Kertas    : ${totalLembarCetak} Lembar`, 5, 88);
-
         doc.text("---------------------------------", 40, 94, { align: "center" });
 
-        doc.setFont("courier", "bold");
-        doc.text("RINCIAN NOMINAL PENDAPATAN:", 5, 100);
+        doc.setFont("courier", "bold"); doc.text("RINCIAN NOMINAL PENDAPATAN:", 5, 100);
         doc.setFont("courier", "normal");
         doc.text(`Pendapatan Cash     : Rp ${hitungCash.toLocaleString('id-ID')}`, 5, 106);
         doc.text(`Pendapatan QRIS     : Rp ${hitungQris.toLocaleString('id-ID')}`, 5, 111);
-        
         doc.text("---------------------------------", 40, 117, { align: "center" });
-        doc.setFont("courier", "bold");
-        doc.setFontSize(10);
+        
+        doc.setFont("courier", "bold"); doc.setFontSize(10);
         doc.text(`TOTAL OMSET  : Rp ${totalPendapatan.toLocaleString('id-ID')}`, 5, 124);
-        
-        doc.setFont("courier", "normal");
-        doc.setFontSize(8);
+        doc.setFont("courier", "normal"); doc.setFontSize(8);
         doc.text("---------------------------------", 40, 130, { align: "center" });
-        
-        doc.text("Pemeriksa / Kasir,", 5, 137);
-        doc.text("(__________________)", 5, 157);
-
-        doc.setFont("courier", "italic");
-        doc.setFontSize(7);
+        doc.text("Pemeriksa / Kasir,", 5, 137); doc.text("(__________________)", 5, 157);
+        doc.setFont("courier", "italic"); doc.setFontSize(7);
         doc.text("Sistem Rekap Real-time Cloud VAM", 40, 166, { align: "center" });
 
         triggerPDFDownload(doc, `Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
@@ -1242,45 +1082,31 @@
     function generateInvoiceWithQR(item) {
         const qrContainer = document.getElementById('qrcode-hidden');
         qrContainer.innerHTML = '';
-        const linkNotaDigital = `https://mokugraphy-creator.github.io/antriphotobox1/?id=${item.firebaseId}`;
+        
+        // KRUSIAL: Menyamakan format pemanggilan ID menggunakan hash fragment (#) atau query string sesuai konfigurasi web pengunjung Anda.
+        const linkNotaDigital = `https://mokugraphy-creator.github.io/antriphotobox1/#${item.firebaseId}`;
 
-        const qrcode = new QRCode(qrContainer, {
-            text: linkNotaDigital,
-            width: 80,
-            height: 80,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
+        new QRCode(qrContainer, {
+            text: linkNotaDigital, width: 80, height: 80,
+            colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
         });
 
         setTimeout(() => {
             const qrImgElement = qrContainer.querySelector('img');
             if (!qrImgElement) return;
-
             const qrBase64 = qrImgElement.src;
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: [80, 138]
-            });
-
-            const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
-            const imgLogo = document.getElementById('brand-logo-img');
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 138] });
 
             try {
+                const imgLogo = document.getElementById('brand-logo-img');
                 const dimensions = calculateAspectRatioFit(imgLogo.naturalWidth || 100, imgLogo.naturalHeight || 100, 32, 16);
-                const posX = (80 - dimensions.width) / 2; 
-                doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
-            } catch (e) {
-                console.log("Logo template error.");
-            }
+                doc.addImage(imgLogo, 'JPEG', (80 - dimensions.width) / 2, 5, dimensions.width, dimensions.height);
+            } catch (e) {}
 
-            doc.setFont("courier", "bold");
-            doc.setFontSize(12);
+            doc.setFont("courier", "bold"); doc.setFontSize(12);
             doc.text("VAM PHOTOBOX", 40, 28, { align: "center" });
-            doc.setFont("courier", "normal");
-            doc.setFontSize(8);
+            doc.setFont("courier", "normal"); doc.setFontSize(8);
             doc.text("---------------------------------", 40, 32, { align: "center" });
             
             doc.text(`No. Antrean: #${item.nomor}`, 5, 38);
@@ -1288,27 +1114,21 @@
             doc.text(`Nama       : ${item.nama.toUpperCase()}`, 5, 46);
             doc.text("---------------------------------", 40, 52, { align: "center" });
 
-            doc.setFont("courier", "bold");
-            doc.text("Rincian Pesanan:", 5, 58);
+            doc.setFont("courier", "bold"); doc.text("Rincian Pesanan:", 5, 58);
             doc.setFont("courier", "normal");
             doc.text(`${item.paket}`, 5, 64);
             doc.text(`Frame Pilihan : ${item.frame}`, 5, 69);
             doc.text(`Jumlah Cetak  : ${item.jumlahCetak} Lembar`, 5, 74);
             doc.text(`Metode Bayar  : ${item.pembayaran}`, 5, 79);
-            
             doc.text("---------------------------------", 40, 86, { align: "center" });
-            doc.setFont("courier", "bold");
-            doc.setFontSize(10);
-            doc.text(`TOTAL BAYAR: Rp ${hargaTotal}`, 5, 93);
             
-            doc.setFont("courier", "normal");
-            doc.setFontSize(8);
+            doc.setFont("courier", "bold"); doc.setFontSize(10);
+            doc.text(`TOTAL BAYAR: Rp ${item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID')}`, 5, 93);
+            doc.setFont("courier", "normal"); doc.setFontSize(8);
             doc.text("---------------------------------", 40, 99, { align: "center" });
             
             doc.addImage(qrBase64, 'PNG', 28, 101, 24, 24);
-            
-            doc.setFont("courier", "italic");
-            doc.setFontSize(7);
+            doc.setFont("courier", "italic"); doc.setFontSize(7);
             doc.text("Scan QR untuk cek status antrean", 40, 131, { align: "center" });
 
             triggerPDFDownload(doc, `Invoice_VAM_${item.nomor}_${item.nama}.pdf`);
@@ -1327,9 +1147,10 @@
 
         const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
         const tanggalTrans = new Date(item.timestamp).toLocaleString('id-ID');
-        const linkTracking = `https://mokugraphy-creator.github.io/antriphotobox1/?id=${item.firebaseId}`;
 
-        // Mengatur susunan teks tanpa enter berlebih agar pesan utuh, padat, dan tidak terpotong di aplikasi WA mobile
+        // PERBAIKAN UTAMA: Mengubah dari `?id=` menjadi `/#${item.firebaseId}` agar halaman web tujuan membaca ID unik transaksi dengan benar (Gambar 2)
+        const linkTracking = `https://mokugraphy-creator.github.io/antriphotobox1/#${item.firebaseId}`;
+
         const teksPesan = encodeURIComponent(
 `*INVOICE DIGITAL - VAM PHOTOBOX* 📸
 -------------------------------------------
@@ -1354,8 +1175,7 @@ Terima kasih banyak atas kunjungan Anda! ✨
 Follow kami di instagram @vam.photobooth`
         );
 
-        const urlWhatsApp = `https://api.whatsapp.com/send?phone=${noHP}&text=${teksPesan}`;
-        window.open(urlWhatsApp, '_blank');
+        window.open(`https://api.whatsapp.com/send?phone=${noHP}&text=${teksPesan}`, '_blank');
     }
 
     function updateStats(list) {
