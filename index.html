@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Rekap Antrean Photobox v2.7</title>
+    <title>Sistem Rekap Antrean Photobox v2.8</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -126,6 +126,33 @@
             font-weight: 700;
         }
 
+        /* Live Queue Info Area */
+        .visitor-queue-info {
+            display: none;
+            background: #eddffc;
+            border: 1px solid #c0a3e8;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #3b0764;
+        }
+
+        /* Live Price Preview Box */
+        .price-preview-box {
+            background: #f0fdf4;
+            border: 1px dashed #4ade80;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 5px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
         .main-layout {
             display: flex;
             flex-direction: column;
@@ -135,6 +162,9 @@
         /* Modifikasi Layout khusus Mode Pengunjung */
         body.visitor-mode .admin-only {
             display: none !important;
+        }
+        body.visitor-mode .visitor-queue-info {
+            display: block !important;
         }
         body.visitor-mode .main-layout {
             display: flex;
@@ -512,6 +542,10 @@
         <button id="btnModeToggle" class="btn-mode-toggle">Switch ke Mode Pengunjung (Self-Service)</button>
     </div>
 
+    <div class="visitor-queue-info" id="liveQueueTracker">
+        Keadaan Antrean Saat Ini: <strong>Memuat data...</strong>
+    </div>
+
     <div class="stats-bar admin-only">
         <div class="stat-card"><h3>Total Antrean</h3><p id="stat-total">0</p></div>
         <div class="stat-card"><h3>Menunggu</h3><p id="stat-menunggu" style="color: var(--danger)">0</p></div>
@@ -579,6 +613,11 @@
                         <label><input type="radio" name="frame" value="9" class="btn-check"><span class="btn-outline">9</span></label>
                         <label><input type="radio" name="frame" value="10" class="btn-check"><span class="btn-outline">10</span></label>
                     </div>
+                </div>
+
+                <div class="price-preview-box">
+                    <span>Estimasi Total Biaya:</span>
+                    <strong id="liveTotalHarga" style="color: var(--success); font-size: 16px;">Rp 5.000</strong>
                 </div>
 
                 <button type="submit" class="btn-submit" id="btn-submit-text">Tambahkan ke Antrean</button>
@@ -677,6 +716,9 @@
     let currentAntreanList = []; 
     let filteredAntreanList = []; 
     let isVisitorMode = false;
+    
+    // PIN Proteksi Kunci Admin Modul
+    const ADMIN_PIN = "1234";
 
     // Generate Opsi Tahun Secara Otomatis di Filter
     const filterTahunSelect = document.getElementById('filterTahun');
@@ -693,18 +735,18 @@
     document.getElementById('filterBulan').value = new Date().getMonth();
     document.getElementById('filterTanggal').value = new Date().toISOString().slice(0, 10);
 
-    // Fungsi Pengatur Switch Dashboard Pengunjung (Self-Service)
+    // Fungsi Pengatur Switch Dashboard Pengunjung dengan Fitur Enskripsi PIN Admin
     document.getElementById('btnModeToggle').addEventListener('click', function() {
-        isVisitorMode = !isVisitorMode;
         if(isVisitorMode) {
-            document.body.classList.add('visitor-mode');
-            this.innerText = "Switch ke Dashboard Admin";
-            this.classList.add('active-visitor');
-            document.getElementById('main-title').innerText = "VAM Photobox - Registrasi Mandiri";
-            document.getElementById('main-desc').innerText = "Silakan isi data nama dan pilih paket foto Anda di bawah ini";
-            document.getElementById('form-card-title').innerText = "Form Isian Pengunjung";
-            document.getElementById('btn-submit-text').innerText = "Kirim & Ambil Nomor Antrean";
-        } else {
+            // Validasi PIN ketika mencoba pindah ke Mode Admin Dashboard
+            const inputPin = prompt("Masukkan PIN Keamanan Admin untuk masuk:");
+            if (inputPin === null) return; 
+            if (inputPin !== ADMIN_PIN) {
+                alert("❌ PIN Salah! Akses Menuju Dashboard Admin Ditolak.");
+                return;
+            }
+            
+            isVisitorMode = false;
             document.body.classList.remove('visitor-mode');
             this.innerText = "Switch ke Mode Pengunjung (Self-Service)";
             this.classList.remove('active-visitor');
@@ -712,8 +754,59 @@
             document.getElementById('main-desc').innerText = "Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time";
             document.getElementById('form-card-title').innerText = "Input Antrean Baru";
             document.getElementById('btn-submit-text').innerText = "Tambahkan ke Antrean";
+        } else {
+            // Pengunjung bebas beralih ke Mode Registrasi Mandiri tanpa PIN
+            isVisitorMode = true;
+            document.body.classList.add('visitor-mode');
+            this.innerText = "Switch ke Dashboard Admin";
+            this.classList.add('active-visitor');
+            document.getElementById('main-title').innerText = "VAM Photobox - Registrasi Mandiri";
+            document.getElementById('main-desc').innerText = "Silakan isi data nama dan pilih paket foto Anda di bawah ini";
+            document.getElementById('form-card-title').innerText = "Form Isian Pengunjung";
+            document.getElementById('btn-submit-text').innerText = "Kirim & Ambil Nomor Antrean";
+            updateLiveHarga();
         }
     });
+
+    // Fungsi Hitung Otomatis (Live Price) Real-time Preview Form
+    function updateLiveHarga() {
+        const paketRadio = document.querySelector('input[name="paket"]:checked');
+        if(!paketRadio) return;
+        
+        const hargaDasar = parseInt(paketRadio.getAttribute('data-harga'));
+        const tipePaket = paketRadio.getAttribute('data-tipe');
+        const jumlahCetak = parseInt(document.getElementById('jumlahCetak').value) || 1;
+
+        let total = hargaDasar;
+        if (tipePaket === "cetak") {
+            total = hargaDasar * jumlahCetak;
+        }
+        document.getElementById('liveTotalHarga').innerText = 'Rp ' + total.toLocaleString('id-ID');
+    }
+
+    // Event Trigger Hitung Ulang Live Price Form
+    document.querySelectorAll('input[name="paket"]').forEach(radio => {
+        radio.addEventListener('change', updateLiveHarga);
+    });
+    document.getElementById('jumlahCetak').addEventListener('input', updateLiveHarga);
+
+    // Fungsi Live Tracking Urutan Nomor Antrean Berjalan di Sisi Pengunjung
+    function updateLiveQueueTracker(listAllData) {
+        // Cari antrean paling awal/kecil yang hari ini berstatus masih "Menunggu"
+        const antreanMenungguHariIni = listAllData.filter(i => i.statusAntrean === 'Menunggu');
+        
+        if (antreanMenungguHariIni.length === 0) {
+            document.getElementById('liveQueueTracker').innerHTML = `🎉 <strong>Semua antrean telah dilayani!</strong> Tidak ada antrean menunggu saat ini.`;
+        } else {
+            const antreanSekarang = antreanMenungguHariIni[0]; // Ambil antrean paling pertama dalam baris tunggu
+            const totalSisaDiDepan = antreanMenungguHariIni.length - 1;
+            
+            document.getElementById('liveQueueTracker').innerHTML = `
+                📸 Saat ini sedang melayani nomor antrean: <strong style="font-size:16px; color:#1e1b4b;">#${antreanSekarang.nomor}</strong> (${antreanSekarang.nama.toUpperCase()}) 
+                | ⏳ Sisa antrean di dalam daftar tunggu: <strong>${totalSisaDiDepan} antrean lagi</strong>
+            `;
+        }
+    }
 
     function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
         const ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
@@ -778,6 +871,10 @@
         // Reset form input
         document.getElementById('nama').value = '';
         document.getElementById('jumlahCetak').value = '1';
+        
+        // Kembalikan Default File Only Pilihan Terpilih
+        document.querySelector('input[name="paket"][value="FILE ONLY (Rp5.000)"]').checked = true;
+        updateLiveHarga();
 
         // Tampilkan feedback pop up jika sedang diisi oleh pengunjung mandiri
         if(isVisitorMode) {
@@ -835,6 +932,7 @@
             currentAntreanList = [];
             filteredAntreanList = [];
             updateStats([]);
+            updateLiveQueueTracker([]);
             document.getElementById('listAntrean').innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding: 30px;">Belum ada data antrean di cloud database.</td></tr>`;
             return;
         }
@@ -847,6 +945,9 @@
 
         totalAntreanGlobal = antreanList.length;
         currentAntreanList = antreanList;
+        
+        // Pemicu Live Tracker Sisi Pengunjung
+        updateLiveQueueTracker(antreanList);
         prosesFilterData();
     });
 
@@ -983,7 +1084,7 @@
         }
     });
 
-    // EKSPOR KE EXCEL (Otomatis Mengikuti Mode Filter yang Aktif: Harian / Bulanan / Tahunan)
+    // EKSPOR KE EXCEL
     document.getElementById('btnExportExcel').addEventListener('click', function() {
         if (filteredAntreanList.length === 0) {
             alert("Tidak ada data antrean pada jangkauan filter saat ini.");
@@ -1024,7 +1125,7 @@
         XLSX.writeFile(workbook, `${namaFile}_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // LAPORAN PENDAPATAN PDF (Otomatis Mengikuti Judul Jangkauan Filter yang Aktif)
+    // LAPORAN PENDAPATAN PDF 
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
         if (filteredAntreanList.length === 0) {
             alert("Tidak ada data antrean pada periode filter ini.");
