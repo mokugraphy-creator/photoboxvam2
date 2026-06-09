@@ -1329,10 +1329,11 @@
         const tanggalTrans = new Date(item.timestamp).toLocaleString('id-ID');
         const linkTracking = `https://mokugraphy-creator.github.io/antriphotobox1/?id=${item.firebaseId}`;
 
+        // Mengatur susunan teks tanpa enter berlebih agar pesan utuh, padat, dan tidak terpotong di aplikasi WA mobile
         const teksPesan = encodeURIComponent(
 `*INVOICE DIGITAL - VAM PHOTOBOX* 📸
 -------------------------------------------
-Halo Kak *${item.nama.toUpperCase()}*, berikut adalah detail rincian transaksi photobox Kakak:
+Halo Kak *${item.nama.toUpperCase()}*, berikut detail transaksi Kakak:
 
 📌 *No. Antrean :* #${item.nomor}
 📅 *Waktu Cetak  :* ${tanggalTrans}
@@ -1340,18 +1341,17 @@ Halo Kak *${item.nama.toUpperCase()}*, berikut adalah detail rincian transaksi p
 🖼️ *Pilihan Frame:* Frame ${item.frame}
 🖨️ *Jumlah Cetak :* ${item.jumlahCetak} Lembar
 💳 *Metode Bayar :* ${item.pembayaran}
-
 💰 *TOTAL BAYAR : Rp ${hargaTotal}*
 -------------------------------------------
 🟢 *Status Antrean Saat Ini:* _${item.statusAntrean}_
 🟢 *Status Produksi Cetak:* _${item.statusCetak}_
 🟢 *Status Pengambilan:* _${item.statusAmbil}_
 
-Pelanggan dapat memantau urutan antrean langsung, melihat posisi antrean terkini, serta mengunduh akses berkas Nota PDF Digital secara real-time melalui tautan resmi dashboard pengunjung di bawah ini:
+Klik tautan resmi di bawah ini untuk mengunduh berkas *Nota PDF* atau memantau *Status Antrean Terupdate* Kakak secara live:
 🔗 ${linkTracking}
 
 Terima kasih banyak atas kunjungan Anda! ✨
-ikuti kami di instagram @vam.photobooth`
+Follow kami di instagram @vam.photobooth`
         );
 
         const urlWhatsApp = `https://api.whatsapp.com/send?phone=${noHP}&text=${teksPesan}`;
