@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Rekap Antrean Photobox v2.6</title>
+    <title>Sistem Rekap Antrean Photobox v2.7</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -44,6 +44,7 @@
         header {
             margin-bottom: 20px;
             text-align: center;
+            position: relative;
         }
 
         .brand-logo-container {
@@ -77,6 +78,27 @@
             padding: 0 10px;
         }
 
+        /* Toggle Mode Admin / Pengunjung */
+        .mode-toggle-container {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .btn-mode-toggle {
+            padding: 8px 16px;
+            background-color: #64748b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        .btn-mode-toggle.active-visitor {
+            background-color: #e11d48;
+        }
+
         .stats-bar {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -108,6 +130,21 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+        }
+
+        /* Modifikasi Layout khusus Mode Pengunjung */
+        body.visitor-mode .admin-only {
+            display: none !important;
+        }
+        body.visitor-mode .main-layout {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        body.visitor-mode .form-card {
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
         .card {
@@ -384,6 +421,23 @@
             padding: 10px;
         }
 
+        /* Notifikasi sukses pengunjung */
+        .visitor-toast {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            font-weight: 600;
+            z-index: 9999;
+            text-align: center;
+        }
+
         @media (min-width: 768px) {
             body {
                 padding: 30px 20px;
@@ -405,6 +459,9 @@
                 display: grid;
                 grid-template-columns: 380px 1fr;
                 gap: 25px;
+            }
+            body.visitor-mode .main-layout {
+                display: flex;
             }
             .card {
                 padding: 25px;
@@ -440,17 +497,22 @@
 <body>
 
 <div id="qrcode-hidden"></div>
+<div id="visitorToast" class="visitor-toast">✨ Antrean Berhasil Ditambahkan! Silakan Hubungi Kasir. ✨</div>
 
 <div class="container">
     <header>
         <div class="brand-logo-container">
             <img id="brand-logo-img" class="brand-logo" src="logo vam photobox.jpg" alt="Logo VAM Photobox">
         </div>
-        <h1>Sistem Rekap Antrean VAM Photobox</h1>
-        <p>Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time</p>
+        <h1 id="main-title">Sistem Rekap Antrean VAM Photobox</h1>
+        <p id="main-desc">Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time</p>
     </header>
 
-    <div class="stats-bar">
+    <div class="mode-toggle-container">
+        <button id="btnModeToggle" class="btn-mode-toggle">Switch ke Mode Pengunjung (Self-Service)</button>
+    </div>
+
+    <div class="stats-bar admin-only">
         <div class="stat-card"><h3>Total Antrean</h3><p id="stat-total">0</p></div>
         <div class="stat-card"><h3>Menunggu</h3><p id="stat-menunggu" style="color: var(--danger)">0</p></div>
         <div class="stat-card"><h3>Belum Cetak</h3><p id="stat-belum-cetak" style="color: var(--warning)">0</p></div>
@@ -458,8 +520,8 @@
     </div>
 
     <div class="main-layout">
-        <div class="card">
-            <div class="card-title">Input Antrean Baru</div>
+        <div class="card form-card">
+            <div class="card-title" id="form-card-title">Input Antrean Baru</div>
             <form id="antreanForm">
                 <div class="form-group">
                     <label for="nama">Nama Pelanggan</label>
@@ -519,11 +581,11 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit">Tambahkan ke Antrean</button>
+                <button type="submit" class="btn-submit" id="btn-submit-text">Tambahkan ke Antrean</button>
             </form>
         </div>
 
-        <div class="card" style="overflow: hidden;">
+        <div class="card admin-only" style="overflow: hidden;">
             <div class="card-title">Daftar Tunggu & Rekap Antrean</div>
             
             <div class="filter-section">
@@ -531,9 +593,12 @@
                 <div class="filter-row">
                     <select id="filterMode" class="filter-control">
                         <option value="all">Semua Data (Awal-Sekarang)</option>
+                        <option value="harian">Cari Per Tanggal</option>
                         <option value="bulanan">Rekap Bulanan</option>
                         <option value="tahunan">Rekap Tahunan</option>
                     </select>
+
+                    <input type="date" id="filterTanggal" class="filter-control" style="display: none;">
 
                     <select id="filterBulan" class="filter-control" style="display: none;">
                         <option value="0">Januari</option>
@@ -550,8 +615,7 @@
                         <option value="11">Desember</option>
                     </select>
 
-                    <select id="filterTahun" class="filter-control" style="display: none;">
-                        </select>
+                    <select id="filterTahun" class="filter-control" style="display: none;"></select>
                 </div>
             </div>
 
@@ -610,8 +674,9 @@
     const dbRef = ref(database, 'antrean_photobox');
 
     let totalAntreanGlobal = 0;
-    let currentAntreanList = []; // Menyimpan data asli dari Firebase
-    let filteredAntreanList = []; // Menyimpan data hasil filter waktu
+    let currentAntreanList = []; 
+    let filteredAntreanList = []; 
+    let isVisitorMode = false;
 
     // Generate Opsi Tahun Secara Otomatis di Filter
     const filterTahunSelect = document.getElementById('filterTahun');
@@ -624,8 +689,31 @@
         filterTahunSelect.appendChild(opt);
     }
 
-    // Set Default Bulan Filter Sesuai Bulan Berjalan
+    // Set Default Input & Filter Bulan Berjalan
     document.getElementById('filterBulan').value = new Date().getMonth();
+    document.getElementById('filterTanggal').value = new Date().toISOString().slice(0, 10);
+
+    // Fungsi Pengatur Switch Dashboard Pengunjung (Self-Service)
+    document.getElementById('btnModeToggle').addEventListener('click', function() {
+        isVisitorMode = !isVisitorMode;
+        if(isVisitorMode) {
+            document.body.classList.add('visitor-mode');
+            this.innerText = "Switch ke Dashboard Admin";
+            this.classList.add('active-visitor');
+            document.getElementById('main-title').innerText = "VAM Photobox - Registrasi Mandiri";
+            document.getElementById('main-desc').innerText = "Silakan isi data nama dan pilih paket foto Anda di bawah ini";
+            document.getElementById('form-card-title').innerText = "Form Isian Pengunjung";
+            document.getElementById('btn-submit-text').innerText = "Kirim & Ambil Nomor Antrean";
+        } else {
+            document.body.classList.remove('visitor-mode');
+            this.innerText = "Switch ke Mode Pengunjung (Self-Service)";
+            this.classList.remove('active-visitor');
+            document.getElementById('main-title').innerText = "Sistem Rekap Antrean VAM Photobox";
+            document.getElementById('main-desc').innerText = "Manajemen data antrean, paket cetak, frame, dan status produksi secara real-time";
+            document.getElementById('form-card-title').innerText = "Input Antrean Baru";
+            document.getElementById('btn-submit-text').innerText = "Tambahkan ke Antrean";
+        }
+    });
 
     function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
         const ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
@@ -634,7 +722,6 @@
 
     function triggerPDFDownload(doc, filename) {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
         if (isMobile) {
             try {
                 const pdfDataUri = doc.output('datauristring');
@@ -688,13 +775,23 @@
 
         push(dbRef, dataBaru);
 
+        // Reset form input
         document.getElementById('nama').value = '';
         document.getElementById('jumlahCetak').value = '1';
+
+        // Tampilkan feedback pop up jika sedang diisi oleh pengunjung mandiri
+        if(isVisitorMode) {
+            const toast = document.getElementById('visitorToast');
+            toast.innerText = `✨ Sukses! Kak ${nama.toUpperCase()}, Nomor Antrean Anda: #${nomorBaru}. Silakan konfirmasi ke kasir. ✨`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 6000);
+        }
     });
 
-    // Jalankan filter data berdasarkan input pilihan user
+    // Proses filter pencarian data (Semua, Tanggal, Bulanan, Tahunan)
     function prosesFilterData() {
         const mode = document.getElementById('filterMode').value;
+        const targetTanggal = document.getElementById('filterTanggal').value; 
         const targetBulan = parseInt(document.getElementById('filterBulan').value);
         const targetTahun = parseInt(document.getElementById('filterTahun').value);
 
@@ -703,13 +800,14 @@
         } else {
             filteredAntreanList = currentAntreanList.filter(item => {
                 const date = new Date(item.timestamp);
-                const matchTahun = date.getFullYear() === targetTahun;
-                const matchBulan = date.getMonth() === targetBulan;
                 
-                if (mode === 'bulanan') {
-                    return matchTahun && matchBulan;
+                if (mode === 'harian') {
+                    const itemDateStr = date.toISOString().slice(0, 10);
+                    return itemDateStr === targetTanggal;
+                } else if (mode === 'bulanan') {
+                    return date.getFullYear() === targetTahun && date.getMonth() === targetBulan;
                 } else if (mode === 'tahunan') {
-                    return matchTahun;
+                    return date.getFullYear() === targetTahun;
                 }
                 return true;
             });
@@ -717,13 +815,15 @@
         renderTable(filteredAntreanList);
     }
 
-    // Event Listener Elemen Filter UI
+    // Event Listener Filter UI
     document.getElementById('filterMode').addEventListener('change', function() {
         const mode = this.value;
+        document.getElementById('filterTanggal').style.display = (mode === 'harian') ? 'inline-block' : 'none';
         document.getElementById('filterBulan').style.display = (mode === 'bulanan') ? 'inline-block' : 'none';
         document.getElementById('filterTahun').style.display = (mode === 'bulanan' || mode === 'tahunan') ? 'inline-block' : 'none';
         prosesFilterData();
     });
+    document.getElementById('filterTanggal').addEventListener('change', prosesFilterData);
     document.getElementById('filterBulan').addEventListener('change', prosesFilterData);
     document.getElementById('filterTahun').addEventListener('change', prosesFilterData);
 
@@ -735,7 +835,7 @@
             currentAntreanList = [];
             filteredAntreanList = [];
             updateStats([]);
-            document.getElementById('listAntrean').innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding: 30px;">Belum ada antrean hari ini.</td></tr>`;
+            document.getElementById('listAntrean').innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding: 30px;">Belum ada data antrean di cloud database.</td></tr>`;
             return;
         }
 
@@ -747,12 +847,9 @@
 
         totalAntreanGlobal = antreanList.length;
         currentAntreanList = antreanList;
-        
-        // Memproses filter data setelah data firebase diperbarui
         prosesFilterData();
     });
 
-    // Fungsi Render Baris Tabel Berdasarkan Hasil Filter Jangkauan Waktu
     function renderTable(listData) {
         const tbody = document.getElementById('listAntrean');
         tbody.innerHTML = '';
@@ -761,7 +858,7 @@
         updateStats(listData);
 
         if (listData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding: 30px;">Tidak ditemukan data antrean pada periode ini.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding: 30px;">Tidak ditemukan data antrean pada periode filter ini.</td></tr>`;
             return;
         }
 
@@ -814,13 +911,12 @@
             tbody.appendChild(tr);
         });
 
-        // Mengikat kembali Event Listener elemen dinamis tabel
+        // Event Listener Elemen Dinamis Tabel
         document.querySelectorAll('.action-select').forEach(select => {
             select.addEventListener('change', function() {
                 const fId = this.getAttribute('data-id');
                 const field = this.getAttribute('data-field');
                 const val = this.value;
-                
                 const itemRef = ref(database, 'antrean_photobox/' + fId);
                 update(itemRef, { [field]: val });
             });
@@ -878,7 +974,7 @@
 
     document.getElementById('btnBulkDelete').addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        if (confirm(`Apakah Anda yakin ingin menghapus ${checkedBoxes.length} data antrean sekaligus dari semua perangkat?`)) {
+        if (confirm(`Apakah Anda yakin ingin menghapus ${checkedBoxes.length} data antrean sekaligus?`)) {
             checkedBoxes.forEach(cb => {
                 const fId = cb.getAttribute('data-id');
                 const itemRef = ref(database, 'antrean_photobox/' + fId);
@@ -887,19 +983,22 @@
         }
     });
 
-    // FITUR UTAMA BARU: Export ke Excel Mengikuti Hasil Filter Terpilih (Hari, Bulan, atau Tahun)
+    // EKSPOR KE EXCEL (Otomatis Mengikuti Mode Filter yang Aktif: Harian / Bulanan / Tahunan)
     document.getElementById('btnExportExcel').addEventListener('click', function() {
         if (filteredAntreanList.length === 0) {
-            alert("Tidak ada data antrean pada range filter saat ini yang bisa diexport.");
+            alert("Tidak ada data antrean pada jangkauan filter saat ini.");
             return;
         }
 
         const mode = document.getElementById('filterMode').value;
+        const tanggalValue = document.getElementById('filterTanggal').value;
         const bulanLabel = document.getElementById('filterBulan').options[document.getElementById('filterBulan').selectedIndex].text;
         const tahunLabel = document.getElementById('filterTahun').value;
 
         let namaFile = "Rekap_Antrean_Photobox_Semua";
-        if (mode === "bulanan") {
+        if (mode === "harian") {
+            namaFile = `Rekap_Harian_${tanggalValue}`;
+        } else if (mode === "bulanan") {
             namaFile = `Rekap_Bulanan_${bulanLabel}_${tahunLabel}`;
         } else if (mode === "tahunan") {
             namaFile = `Rekap_Tahunan_${tahunLabel}`;
@@ -922,15 +1021,28 @@
         const worksheet = XLSX.utils.json_to_sheet(dataExcel);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Antrean");
-        
         XLSX.writeFile(workbook, `${namaFile}_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
-    // Ringkasan Pendapatan PDF Mengikuti Data Filter Terpilih
+    // LAPORAN PENDAPATAN PDF (Otomatis Mengikuti Judul Jangkauan Filter yang Aktif)
     document.getElementById('btnCetakSummary').addEventListener('click', function() {
         if (filteredAntreanList.length === 0) {
-            alert("Tidak ada data antrean untuk membuat laporan ringkasan pendapatan pada periode filter ini.");
+            alert("Tidak ada data antrean pada periode filter ini.");
             return;
+        }
+
+        const mode = document.getElementById('filterMode').value;
+        const tanggalValue = document.getElementById('filterTanggal').value;
+        const bulanLabel = document.getElementById('filterBulan').options[document.getElementById('filterBulan').selectedIndex].text;
+        const tahunLabel = document.getElementById('filterTahun').value;
+
+        let periodeJudul = "SEMUA PERIODE DATA";
+        if (mode === "harian") {
+            periodeJudul = `TANGGAL: ${tanggalValue}`;
+        } else if (mode === "bulanan") {
+            periodeJudul = `BULAN: ${bulanLabel.toUpperCase()} ${tahunLabel}`;
+        } else if (mode === "tahunan") {
+            periodeJudul = `TAHUN REKAP: ${tahunLabel}`;
         }
 
         let totalPendapatan = 0;
@@ -963,7 +1075,7 @@
         const doc = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
-            format: [80, 165]
+            format: [80, 175]
         });
 
         const imgLogo = document.getElementById('brand-logo-img');
@@ -973,53 +1085,55 @@
             const posX = (80 - dimensions.width) / 2;
             doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
         } catch (e) {
-            console.log("Gambar logo gagal dimuat di PDF Ringkasan.");
+            console.log("Logo image error.");
         }
 
         doc.setFont("courier", "bold");
-        doc.setFontSize(11);
-        doc.text("LAPORAN RINGKASAN PENDAPATAN", 40, 29, { align: "center" });
-        doc.text("VAM PHOTOBOX", 40, 33, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("LAPORAN RINGKASAN PENDAPATAN", 40, 27, { align: "center" });
+        doc.text("VAM PHOTOBOX", 40, 31, { align: "center" });
         
-        doc.setFont("courier", "normal");
         doc.setFontSize(8);
-        doc.text(`Waktu Cetak: ${new Date().toLocaleString('id-ID')}`, 5, 40);
-        doc.text("---------------------------------", 40, 44, { align: "center" });
-
-        doc.setFont("courier", "bold");
-        doc.text("STATISTIK PRODUKSI ANTRIAN:", 5, 50);
-        doc.setFont("courier", "normal");
-        doc.text(`Total Antrean Masuk : ${filteredAntreanList.length} Transaksi`, 5, 55);
-        doc.text(`Status Menunggu     : ${antreanMenunggu} Orang`, 5, 60);
-        doc.text(`Status Selesai Foto : ${antreanSelesaiFoto} Orang`, 5, 65);
-        doc.text(`Status Belum Cetak  : ${produksiBelumCetak} Pesanan`, 5, 70);
-        doc.text(`Status Selesai Cetak: ${produksiSelesaiCetak} Pesanan`, 5, 75);
-        doc.text(`Paket Tanpa Cetak   : ${produksiTidakCetak} File Only`, 5, 80);
-        doc.text(`Akumulasi Kertas    : ${totalLembarCetak} Lembar`, 5, 85);
-
-        doc.text("---------------------------------", 40, 91, { align: "center" });
-
-        doc.setFont("courier", "bold");
-        doc.text("RINCIAN NOMINAL PENDAPATAN:", 5, 97);
-        doc.setFont("courier", "normal");
-        doc.text(`Pendapatan Cash     : Rp ${hitungCash.toLocaleString('id-ID')}`, 5, 103);
-        doc.text(`Pendapatan QRIS     : Rp ${hitungQris.toLocaleString('id-ID')}`, 5, 108);
+        doc.text(periodeJudul, 40, 36, { align: "center" });
         
-        doc.text("---------------------------------", 40, 114, { align: "center" });
+        doc.setFont("courier", "normal");
+        doc.text(`Waktu Cetak: ${new Date().toLocaleString('id-ID')}`, 5, 43);
+        doc.text("---------------------------------", 40, 47, { align: "center" });
+
+        doc.setFont("courier", "bold");
+        doc.text("STATISTIK PRODUKSI ANTRIAN:", 5, 53);
+        doc.setFont("courier", "normal");
+        doc.text(`Total Antrean Masuk : ${filteredAntreanList.length} Transaksi`, 5, 58);
+        doc.text(`Status Menunggu     : ${antreanMenunggu} Orang`, 5, 63);
+        doc.text(`Status Selesai Foto : ${antreanSelesaiFoto} Orang`, 5, 68);
+        doc.text(`Status Belum Cetak  : ${produksiBelumCetak} Pesanan`, 5, 73);
+        doc.text(`Status Selesai Cetak: ${produksiSelesaiCetak} Pesanan`, 5, 78);
+        doc.text(`Paket Tanpa Cetak   : ${produksiTidakCetak} File Only`, 5, 83);
+        doc.text(`Akumulasi Kertas    : ${totalLembarCetak} Lembar`, 5, 88);
+
+        doc.text("---------------------------------", 40, 94, { align: "center" });
+
+        doc.setFont("courier", "bold");
+        doc.text("RINCIAN NOMINAL PENDAPATAN:", 5, 100);
+        doc.setFont("courier", "normal");
+        doc.text(`Pendapatan Cash     : Rp ${hitungCash.toLocaleString('id-ID')}`, 5, 106);
+        doc.text(`Pendapatan QRIS     : Rp ${hitungQris.toLocaleString('id-ID')}`, 5, 111);
+        
+        doc.text("---------------------------------", 40, 117, { align: "center" });
         doc.setFont("courier", "bold");
         doc.setFontSize(10);
-        doc.text(`TOTAL OMSET  : Rp ${totalPendapatan.toLocaleString('id-ID')}`, 5, 121);
+        doc.text(`TOTAL OMSET  : Rp ${totalPendapatan.toLocaleString('id-ID')}`, 5, 124);
         
         doc.setFont("courier", "normal");
         doc.setFontSize(8);
-        doc.text("---------------------------------", 40, 127, { align: "center" });
+        doc.text("---------------------------------", 40, 130, { align: "center" });
         
-        doc.text("Pemeriksa / Kasir,", 5, 134);
-        doc.text("(__________________)", 5, 154);
+        doc.text("Pemeriksa / Kasir,", 5, 137);
+        doc.text("(__________________)", 5, 157);
 
         doc.setFont("courier", "italic");
         doc.setFontSize(7);
-        doc.text("Sistem Rekap Real-time Cloud VAM", 40, 161, { align: "center" });
+        doc.text("Sistem Rekap Real-time Cloud VAM", 40, 166, { align: "center" });
 
         triggerPDFDownload(doc, `Laporan_Pendapatan_VAM_${new Date().toISOString().slice(0,10)}.pdf`);
     });
@@ -1027,7 +1141,6 @@
     function generateInvoiceWithQR(item) {
         const qrContainer = document.getElementById('qrcode-hidden');
         qrContainer.innerHTML = '';
-        
         const linkNotaDigital = `https://mokugraphy-creator.github.io/antriphotobox1/?id=${item.firebaseId}`;
 
         const qrcode = new QRCode(qrContainer, {
@@ -1044,7 +1157,6 @@
             if (!qrImgElement) return;
 
             const qrBase64 = qrImgElement.src;
-            
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({
                 orientation: 'portrait',
@@ -1060,7 +1172,7 @@
                 const posX = (80 - dimensions.width) / 2; 
                 doc.addImage(imgLogo, 'JPEG', posX, 5, dimensions.width, dimensions.height);
             } catch (e) {
-                console.log("Logo VAM gagal dimuat di PDF Struk.");
+                console.log("Logo template error.");
             }
 
             doc.setFont("courier", "bold");
@@ -1081,7 +1193,7 @@
             doc.text(`${item.paket}`, 5, 64);
             doc.text(`Frame Pilihan : ${item.frame}`, 5, 69);
             doc.text(`Jumlah Cetak  : ${item.jumlahCetak} Lembar`, 5, 74);
-            doc.text(`Metode Bayar  : ${item.pembayaran}`, 5, 74);
+            doc.text(`Metode Bayar  : ${item.pembayaran}`, 5, 79);
             
             doc.text("---------------------------------", 40, 86, { align: "center" });
             doc.setFont("courier", "bold");
@@ -1105,20 +1217,12 @@
     function kirimInvoiceWhatsApp(item) {
         let noHP = prompt("Masukkan Nomor WhatsApp Pelanggan (Contoh: 081234567xxx):");
         if (noHP === null) return;
-        
-        if (noHP.trim() === "") {
-            alert("Nomor WhatsApp tidak boleh kosong!");
-            return;
-        }
+        if (noHP.trim() === "") { alert("Nomor WhatsApp tidak boleh kosong!"); return; }
 
         noHP = noHP.trim();
-        if (noHP.startsWith("0")) {
-            noHP = "62" + noHP.slice(1);
-        } else if (noHP.startsWith("+62")) {
-            noHP = noHP.replace("+", "");
-        } else if (!noHP.startsWith("62")) {
-            noHP = "62" + noHP;
-        }
+        if (noHP.startsWith("0")) { noHP = "62" + noHP.slice(1); } 
+        else if (noHP.startsWith("+62")) { noHP = noHP.replace("+", ""); } 
+        else if (!noHP.startsWith("62")) { noHP = "62" + noHP; }
 
         const hargaTotal = item.totalHarga ? item.totalHarga.toLocaleString('id-ID') : (5000).toLocaleString('id-ID');
         const tanggalTrans = new Date(item.timestamp).toLocaleString('id-ID');
